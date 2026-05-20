@@ -10,7 +10,7 @@ on:
 
 jobs:
   pipeline:
-    uses: NestBook/config/.github/workflows/actions.yml@main
+    uses: NestBook/config/.github/workflows/blank.yml@main
     with:
       service_name: nestbook-backend
     secrets: inherit
