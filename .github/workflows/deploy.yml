@@ -1,0 +1,15 @@
+name: Deploy Backend
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  pipeline:
+    uses: NestBook/config/.github/workflows/blank.yml@main
+    with:
+      service_name: nestbook-backend
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN:    ${{ secrets.DOCKERHUB_TOKEN }}
