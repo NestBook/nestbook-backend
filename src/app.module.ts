@@ -14,6 +14,10 @@ import logConfig from './config/log.config';
 import { RequestIdMiddleware } from './commons/middleware/request-id.middleware';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './commons/exception/global.exception';
+import { UserModule } from './modules/user/user.module';
+import { PermissionModule } from './modules/permission/permission.module';
+import { RoleModule } from './modules/role/role.module';
+import { ResourceModule } from './modules/resource/resource.module';
 
 @Module({
   imports: [
@@ -25,7 +29,11 @@ import { HttpExceptionFilter } from './commons/exception/global.exception';
     DatabaseModule,
     S3Module,
     RedisModule,
-    LoggerModule
+    LoggerModule,
+    UserModule,
+    RoleModule,
+    PermissionModule,
+    ResourceModule
   ],
   controllers: [AppController],
   providers: [
@@ -36,7 +44,7 @@ import { HttpExceptionFilter } from './commons/exception/global.exception';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-    .apply(RequestIdMiddleware)
-    .forRoutes('*');
+      .apply(RequestIdMiddleware)
+      .forRoutes('*');
   }
 }
