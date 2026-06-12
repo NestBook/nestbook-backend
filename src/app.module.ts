@@ -18,6 +18,9 @@ import { UserModule } from './modules/user/user.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { RoleModule } from './modules/role/role.module';
 import { ResourceModule } from './modules/resource/resource.module';
+import { HotelModule } from './modules/hotel/hotel.module';
+import { RoomTypeModule } from './modules/room-type/room-type.module';
+import { PublicHotelModule } from './modules/room-type/public-hotel.module';
 
 @Module({
   imports: [
@@ -33,7 +36,10 @@ import { ResourceModule } from './modules/resource/resource.module';
     UserModule,
     RoleModule,
     PermissionModule,
-    ResourceModule
+    ResourceModule,
+    HotelModule,
+    RoomTypeModule,
+    PublicHotelModule
   ],
   controllers: [AppController],
   providers: [
