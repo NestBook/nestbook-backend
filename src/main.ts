@@ -16,6 +16,8 @@ async function bootstrap() {
 
   app.enableCors(configService.get('app.cors'));
 
+  console.log(process.env.GOOGLE_CLIENT_ID)
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

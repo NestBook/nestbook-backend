@@ -109,4 +109,39 @@ export class RoleRepository implements IRoleRepository {
             }
         });
     }
+
+    async findRolesByIds(roleIds: string[]): Promise<RoleEntity[]> {
+        if (roleIds.length === 0) {
+            return [];
+        }
+
+        return this.roleOrmRepository.find({
+            where: {
+                id: In(roleIds),
+            },
+        });
+    }
+
+    async findPermissionIdsByRoleIds(roleIds: string[]): Promise<string[]> {
+        if (roleIds.length === 0) {
+            return [];
+        }
+
+        const rolePermissions = await this.rolePermissionOrmRepository.find({
+            select: {
+                permissionId: true,
+            },
+            where: {
+                roleId: In(roleIds),
+            },
+        });
+
+        return [
+            ...new Set(
+                rolePermissions.map((rolePermission) =>
+                    String(rolePermission.permissionId),
+                ),
+            ),
+        ];
+    }
 }

@@ -36,4 +36,25 @@ export class PermissionRepository implements IPermissionRepository {
 
         return permissions.map((permission) => String(permission.id));
     }
+
+    async findPermissionCodesByIds(permissionIds: string[]): Promise<string[]> {
+        if (permissionIds.length === 0) {
+            return [];
+        }
+
+        const permissions = await this.permissionOrmRepository.find({
+            select: {
+                code: true,
+            },
+            where: {
+                id: In(permissionIds),
+            },
+        });
+
+        return [
+            ...new Set(
+                permissions.map((permission) => permission.code),
+            ),
+        ];
+    }
 }

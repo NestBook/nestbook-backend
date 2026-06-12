@@ -10,6 +10,7 @@ import { USER_REPOSITORY } from './repository/user.repository.interface';
 import type { IUserRepository } from './repository/user.repository.interface';
 
 import { SetUserRoleResult } from './response/set-user-role.response';
+import { UserAccessResponse } from './response/user-access.response';
 
 import { RoleService } from '../role/role.service';
 
@@ -46,6 +47,24 @@ export class UserService {
 
   async findByEmail(email: string): Promise<UserEntity | null> {
     return this.userRepository.findUserByEmail(email);
+  }
+
+  async findByIdWithAccess(userId: string): Promise<UserAccessResponse> {
+    const user = await this.getUserOrThrow(userId);
+
+    return this.mapUserToAccessResponse(user);
+  }
+
+  async findByEmailWithAccess(
+    email: string,
+  ): Promise<UserAccessResponse | null> {
+    const user = await this.userRepository.findUserByEmail(email);
+
+    if (!user) {
+      return null;
+    }
+
+    return this.mapUserToAccessResponse(user);
   }
 
   async update(userId: string, dto: UpdateUserDto): Promise<UserEntity> {
@@ -121,6 +140,24 @@ export class UserService {
       this.logger.log(`Email already exists: ${email}`);
       throw new ConflictError('Email already exists');
     }
+  }
+
+  private async mapUserToAccessResponse(
+    user: UserEntity,
+  ): Promise<UserAccessResponse> {
+    const roleIds = await this.userRepository.findRoleIdsByUserId(user.id);
+
+    const access = await this.roleService.getAccessByRoleIds(roleIds);
+
+    return {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      phone: user.phone,
+      status: user.status,
+      roles: access.roles,
+      permissions: access.permissions,
+    };
   }
 
   private normalizeIds(ids: string[]): string[] {

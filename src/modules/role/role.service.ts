@@ -24,6 +24,17 @@ export interface SyncRolePermissionsResult {
   removedPermissionIds: string[];
 }
 
+export interface RoleAccessItem {
+  id: string;
+  code: string;
+  name: string;
+}
+
+export interface RoleAccessResult {
+  roles: RoleAccessItem[];
+  permissions: string[];
+}
+
 @Injectable()
 export class RoleService {
   constructor(
@@ -104,7 +115,8 @@ export class RoleService {
       return;
     }
 
-    const existingRoleIds = await this.roleRepository.findExistingRoleIds(roleIds);
+    const existingRoleIds =
+      await this.roleRepository.findExistingRoleIds(roleIds);
 
     if (existingRoleIds.length === roleIds.length) {
       return;
@@ -121,6 +133,34 @@ export class RoleService {
     throw new BadRequestError('One or more role IDs are invalid', {
       missingRoleIds,
     });
+  }
+
+  async getAccessByRoleIds(roleIds: string[]): Promise<RoleAccessResult> {
+    const normalizedRoleIds = this.normalizeIds(roleIds);
+
+    if (normalizedRoleIds.length === 0) {
+      return {
+        roles: [],
+        permissions: [],
+      };
+    }
+
+    const roles = await this.roleRepository.findRolesByIds(normalizedRoleIds);
+
+    const permissionIds =
+      await this.roleRepository.findPermissionIdsByRoleIds(normalizedRoleIds);
+
+    const permissions =
+      await this.permissionService.findPermissionCodesByIds(permissionIds);
+
+    return {
+      roles: roles.map((role) => ({
+        id: String(role.id),
+        code: role.code,
+        name: role.name,
+      })),
+      permissions,
+    };
   }
 
   private normalizeIds(ids: string[]): string[] {

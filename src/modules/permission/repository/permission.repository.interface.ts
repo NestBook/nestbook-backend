@@ -6,4 +6,6 @@ export interface IPermissionRepository {
     findPermissionById(id: string): Promise<PermissionEntity | null>;
 
     findExistingPermissionIds(permissionIds: string[]): Promise<string[]>;
+
+    findPermissionCodesByIds(permissionIds: string[]): Promise<string[]>;
 }
