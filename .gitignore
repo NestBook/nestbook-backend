@@ -3,6 +3,8 @@
 /node_modules
 /build
 
+/test-http/
+
 # Logs
 *.log
 npm-debug.log*

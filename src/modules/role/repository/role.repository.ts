@@ -144,4 +144,14 @@ export class RoleRepository implements IRoleRepository {
             ),
         ];
     }
+
+
+    async findAllRoles(): Promise<RoleEntity[]> {
+        return await this.roleOrmRepository.find({
+            order: {
+                id: 'ASC',
+            },
+        });
+    }
+
 }

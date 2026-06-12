@@ -47,6 +47,11 @@ export class RoleService {
     private readonly logger: LoggerService,
   ) { }
 
+
+  async findAll(): Promise<RoleEntity[]> {
+    return this.roleRepository.findAllRoles();
+  }
+
   async create(dto: CreateRoleDto): Promise<RoleEntity> {
     const existingRole = await this.roleRepository.findRoleByCode(dto.code);
 

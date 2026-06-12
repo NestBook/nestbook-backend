@@ -1,10 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { PermissionService } from './permission.service';
-import { CreatePermissionDto } from './dto/create-permission.dto';
-import { UpdatePermissionDto } from './dto/update-permission.dto';
+import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 
-@Controller('permission')
+import { PermissionService } from './permission.service';
+
+@Controller('permissions')
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) { }
 
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  findAll() {
+    return this.permissionService.findAll();
+  }
+
+  @Get('grouped-by-resource')
+  @HttpCode(HttpStatus.OK)
+  findGroupedByResource() {
+    return this.permissionService.findGroupedByResource();
+  }
 }

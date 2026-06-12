@@ -55,6 +55,28 @@ export class UserService {
     return this.mapUserToAccessResponse(user);
   }
 
+
+  async hasPermissions(
+    userId: string,
+    requiredPermissions: string[],
+  ): Promise<boolean> {
+    const user = await this.getUserOrThrow(userId);
+
+    const roleIds = await this.userRepository.findRoleIdsByUserId(user.id);
+
+    if (!roleIds || roleIds.length === 0) {
+      return false;
+    }
+
+    const access = await this.roleService.getAccessByRoleIds(roleIds);
+
+    const userPermissions = access.permissions ?? [];
+
+    return requiredPermissions.every((permission) =>
+      userPermissions.includes(permission),
+    );
+  }
+
   async findByEmailWithAccess(
     email: string,
   ): Promise<UserAccessResponse | null> {
@@ -159,6 +181,8 @@ export class UserService {
       permissions: access.permissions,
     };
   }
+
+
 
   private normalizeIds(ids: string[]): string[] {
     return [...new Set(ids.map((id) => String(id)))];

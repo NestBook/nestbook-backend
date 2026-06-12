@@ -17,7 +17,6 @@ import { HttpExceptionFilter } from './commons/exception/global.exception';
 import { UserModule } from './modules/user/user.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { RoleModule } from './modules/role/role.module';
-import { ResourceModule } from './modules/resource/resource.module';
 import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
@@ -34,7 +33,6 @@ import { AuthModule } from './modules/auth/auth.module';
     UserModule,
     RoleModule,
     PermissionModule,
-    ResourceModule,
     AuthModule
   ],
   controllers: [AppController],

@@ -8,6 +8,9 @@ import { AUTH_REPOSITORY } from './repository/auth.repository.interface';
 import { AuthRepository } from './repository/auth.repository';
 import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { PermissionsGuard } from './guards/permissions.guard';
 
 @Module({
   imports: [
@@ -28,6 +31,14 @@ import { JwtModule } from '@nestjs/jwt';
       provide: AUTH_REPOSITORY,
       useClass: AuthRepository,
     },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionsGuard,
+    }
   ],
   exports: [AuthService]
 })

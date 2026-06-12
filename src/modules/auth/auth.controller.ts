@@ -14,7 +14,9 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AdminMfaVerifyDto } from './dto/admin-mfa-verify.dto';
 import { ProviderLoginDto } from './dto/providers-login.dto';
+import { Public } from 'src/commons/decorators/public.decorator';
 
+@Public()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }

@@ -12,6 +12,15 @@ export class PermissionRepository implements IPermissionRepository {
         private readonly permissionOrmRepository: Repository<PermissionEntity>,
     ) { }
 
+    findAllPermissions(): Promise<PermissionEntity[]> {
+        return this.permissionOrmRepository.find({
+            order: {
+                resource: 'ASC',
+                id: 'ASC',
+            },
+        });
+    }
+
     findPermissionById(id: string): Promise<PermissionEntity | null> {
         return this.permissionOrmRepository.findOne({
             where: {
@@ -51,10 +60,6 @@ export class PermissionRepository implements IPermissionRepository {
             },
         });
 
-        return [
-            ...new Set(
-                permissions.map((permission) => permission.code),
-            ),
-        ];
+        return [...new Set(permissions.map((permission) => permission.code))];
     }
 }

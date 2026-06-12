@@ -16,6 +16,7 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SetUserRoleDto } from './dto/set-user-role.dto';
+import { Permissions } from 'src/commons/decorators/permissions.decorator';
 
 @Controller('users')
 export class UserController {
@@ -23,6 +24,7 @@ export class UserController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @Permissions('user.create')
   create(@Body() dto: CreateUserDto) {
     return this.userService.create(dto);
   }
@@ -35,6 +37,7 @@ export class UserController {
 
   @Patch(':userId')
   @HttpCode(HttpStatus.OK)
+  @Permissions('user.update')
   update(
     @Param('userId') userId: string,
     @Body() dto: UpdateUserDto,
@@ -44,12 +47,14 @@ export class UserController {
 
   @Delete(':userId')
   @HttpCode(HttpStatus.OK)
+  @Permissions('user.delete')
   remove(@Param('userId') userId: string) {
     return this.userService.remove(userId);
   }
 
   @Put(':userId/roles')
   @HttpCode(HttpStatus.OK)
+  @Permissions('user.assign_role')
   setUserRoles(
     @Param('userId') userId: string,
     @Body() dto: SetUserRoleDto,
