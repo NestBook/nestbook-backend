@@ -1,20 +1,22 @@
-import {
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
-import { CreateRolePayload } from './payload/create-role.payload';
-import { RoleEntity, RoleStatus } from './entities/role.entity';
-import type {
-  IRoleRepository,
-} from './repository/role.repository.interface';
-import { ROLE_REPOSITORY } from './repository/role.repository.interface';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { SyncRolePermissionsDto } from './dto/sync-role-permission.dto';
+
+import { CreateRolePayload } from './payload/create-role.payload';
+
+import { RoleEntity, RoleStatus } from './entities/role.entity';
+
+import { ROLE_REPOSITORY } from './repository/role.repository.interface';
+import type { IRoleRepository } from './repository/role.repository.interface';
+
+import { PermissionService } from '../permission/permission.service';
+
 import { ConflictError } from 'src/commons/core/response/error/conflict.error';
 import { BadRequestError } from 'src/commons/core/response/error/badrequest.error';
 import { NotFoundError } from 'src/commons/core/response/error/notfound.error';
 import { LoggerService } from 'src/infrastructures/logger/logger.service';
+
 export interface SyncRolePermissionsResult {
   roleId: string;
   permissionIds: string[];
@@ -27,6 +29,9 @@ export class RoleService {
   constructor(
     @Inject(ROLE_REPOSITORY)
     private readonly roleRepository: IRoleRepository,
+
+    private readonly permissionService: PermissionService,
+
     @Inject(LoggerService)
     private readonly logger: LoggerService,
   ) { }
@@ -35,7 +40,7 @@ export class RoleService {
     const existingRole = await this.roleRepository.findRoleByCode(dto.code);
 
     if (existingRole) {
-      this.logger.log('Role code already exists');
+      this.logger.log(`Role code already exists: ${dto.code}`);
       throw new ConflictError('Role code already exists');
     }
 
@@ -57,38 +62,32 @@ export class RoleService {
     const role = await this.roleRepository.findRoleById(roleId);
 
     if (!role) {
-      console.log(`Role not found: ${roleId}`);
       this.logger.error(`Role not found: ${roleId}`);
       throw new NotFoundError('Role not found');
     }
 
-    const requestedPermissionIds = [
-      ...new Set(dto.permissionIds.map((permissionId) => String(permissionId))),
-    ];
+    const requestedPermissionIds = this.normalizeIds(dto.permissionIds);
 
-    await this.validatePermissionIdsExist(requestedPermissionIds);
+    await this.permissionService.validatePermissionIdsExist(
+      requestedPermissionIds,
+    );
 
     const currentPermissionIds =
       await this.roleRepository.findPermissionIdsByRoleId(role.id);
 
-    const requestedPermissionIdSet = new Set(requestedPermissionIds);
-    const currentPermissionIdSet = new Set(currentPermissionIds);
-
-    const addedPermissionIds = requestedPermissionIds.filter(
-      (permissionId) => !currentPermissionIdSet.has(permissionId),
+    const addedPermissionIds = this.getAddedIds(
+      requestedPermissionIds,
+      currentPermissionIds,
     );
 
-    const removedPermissionIds = currentPermissionIds.filter(
-      (permissionId) => !requestedPermissionIdSet.has(permissionId),
+    const removedPermissionIds = this.getRemovedIds(
+      requestedPermissionIds,
+      currentPermissionIds,
     );
 
-    await this.roleRepository.createRolePermissions(
+    await this.roleRepository.setRolePermissions(
       role.id,
       addedPermissionIds,
-    );
-
-    await this.roleRepository.deleteRolePermissions(
-      role.id,
       removedPermissionIds,
     );
 
@@ -98,31 +97,45 @@ export class RoleService {
       addedPermissionIds,
       removedPermissionIds,
     };
-  } // let checking again
+  }
 
-  private async validatePermissionIdsExist(
-    permissionIds: string[],
-  ): Promise<void> {
-    if (permissionIds.length === 0) {
+  async validateRoleIdsExist(roleIds: string[]): Promise<void> {
+    if (roleIds.length === 0) {
       return;
     }
 
-    const existingPermissionIds =
-      await this.roleRepository.findExistingPermissionIds(permissionIds);
+    const existingRoleIds = await this.roleRepository.findExistingRoleIds(roleIds);
 
-    if (existingPermissionIds.length === permissionIds.length) {
+    if (existingRoleIds.length === roleIds.length) {
       return;
     }
 
-    const existingPermissionIdSet = new Set(existingPermissionIds);
+    const existingRoleIdSet = new Set(existingRoleIds);
 
-    const missingPermissionIds = permissionIds.filter(
-      (permissionId) => !existingPermissionIdSet.has(permissionId),
+    const missingRoleIds = roleIds.filter(
+      (roleId) => !existingRoleIdSet.has(roleId),
     );
-    console.log(`one or more permission IDs are invalid`)
-    this.logger.error(`One or more permission IDs are invalid: ${missingPermissionIds}`);
-    throw new BadRequestError('One or more permission IDs are invalid', {
-      missingPermissionIds,
-    })
+
+    this.logger.error(`One or more role IDs are invalid: ${missingRoleIds}`);
+
+    throw new BadRequestError('One or more role IDs are invalid', {
+      missingRoleIds,
+    });
+  }
+
+  private normalizeIds(ids: string[]): string[] {
+    return [...new Set(ids.map((id) => String(id)))];
+  }
+
+  private getAddedIds(requestedIds: string[], currentIds: string[]): string[] {
+    const currentIdSet = new Set(currentIds);
+
+    return requestedIds.filter((id) => !currentIdSet.has(id));
+  }
+
+  private getRemovedIds(requestedIds: string[], currentIds: string[]): string[] {
+    const requestedIdSet = new Set(requestedIds);
+
+    return currentIds.filter((id) => !requestedIdSet.has(id));
   }
 }

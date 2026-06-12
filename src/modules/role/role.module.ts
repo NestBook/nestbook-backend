@@ -7,6 +7,8 @@ import { PermissionEntity } from '../permission/entities/permission.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ROLE_REPOSITORY } from './repository/role.repository.interface';
 import { RoleRepository } from './repository/role.repository';
+import { LoggerModule } from 'src/infrastructures/logger/logger.module';
+import { PermissionModule } from '../permission/permission.module';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { RoleRepository } from './repository/role.repository';
       RolePermissionEntity,
       PermissionEntity,
     ]),
+    LoggerModule,
+    PermissionModule,
   ],
   controllers: [RoleController],
   providers: [
@@ -24,6 +28,6 @@ import { RoleRepository } from './repository/role.repository';
       useClass: RoleRepository,
     },
   ],
-  exports: [RoleService, ROLE_REPOSITORY]
+  exports: [RoleService, RoleModule]
 })
 export class RoleModule { }

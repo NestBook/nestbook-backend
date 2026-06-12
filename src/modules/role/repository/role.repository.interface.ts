@@ -6,23 +6,17 @@ export const ROLE_REPOSITORY = Symbol('ROLE_REPOSITORY');
 export interface IRoleRepository {
     findRoleById(id: string): Promise<RoleEntity | null>;
 
-    findRoleByCode(
-        code: string,
-    ): Promise<RoleEntity | null>;
+    findRoleByCode(code: string): Promise<RoleEntity | null>;
 
     createRole(payload: CreateRolePayload): Promise<RoleEntity>;
 
-    findExistingPermissionIds(permissionIds: string[]): Promise<string[]>;
+    findExistingRoleIds(roleIds: string[]): Promise<string[]>;
 
     findPermissionIdsByRoleId(roleId: string): Promise<string[]>;
 
-    createRolePermissions(
+    setRolePermissions(
         roleId: string,
-        permissionIds: string[],
-    ): Promise<void>;
-
-    deleteRolePermissions(
-        roleId: string,
-        permissionIds: string[],
+        addedPermissionIds: string[],
+        removedPermissionIds: string[],
     ): Promise<void>;
 }

@@ -14,24 +14,20 @@ export enum UserStatus {
     BLOCKED = 'BLOCKED',
 }
 
-export enum AuthProvider {
-    LOCAL = 'LOCAL',
-    GOOGLE = 'GOOGLE',
-}
-
 @Entity('users')
 export class UserEntity {
     @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
     id: string;
 
+    @Index({ unique: true })
     @Column({ type: 'varchar', length: 255 })
     email: string;
 
-    @Column({ name: 'password_hash', type: 'varchar', length: 255, nullable: true })
-    passwordHash: string | null;
-
     @Column({ name: 'full_name', type: 'varchar', length: 150 })
     fullName: string;
+
+    @Column({ type: 'varchar', length: 30, nullable: true })
+    phone: string | null;
 
     @Column({
         type: 'enum',
@@ -39,25 +35,6 @@ export class UserEntity {
         default: UserStatus.ACTIVE,
     })
     status: UserStatus;
-
-    @Column({
-        type: 'enum',
-        enum: AuthProvider,
-        default: AuthProvider.LOCAL,
-    })
-    provider: AuthProvider;
-
-    @Column({ name: 'google_id', type: 'varchar', length: 255, nullable: true })
-    googleId: string | null;
-
-    @Column({ type: 'varchar', length: 30, nullable: true })
-    phone: string | null;
-
-    @Column({ name: 'mfa_enabled', type: 'boolean', default: false })
-    mfaEnabled: boolean;
-
-    @Column({ name: 'mfa_secret', type: 'varchar', length: 255, nullable: true })
-    mfaSecret: string | null;
 
     @CreateDateColumn({ name: 'created_at', type: 'datetime' })
     createdAt: Date;

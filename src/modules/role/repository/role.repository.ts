@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 
 import { RoleEntity } from '../entities/role.entity';
 import { RolePermissionEntity } from '../entities/role-permission.entity';
-import { PermissionEntity } from '../../permission/entities/permission.entity';
 
 import { CreateRolePayload } from '../payload/create-role.payload';
-import { IRoleRepository } from './role.repository.interface';
+import type { IRoleRepository } from './role.repository.interface';
 
 @Injectable()
 export class RoleRepository implements IRoleRepository {
@@ -18,8 +17,7 @@ export class RoleRepository implements IRoleRepository {
         @InjectRepository(RolePermissionEntity)
         private readonly rolePermissionOrmRepository: Repository<RolePermissionEntity>,
 
-        @InjectRepository(PermissionEntity)
-        private readonly permissionOrmRepository: Repository<PermissionEntity>,
+        private readonly dataSource: DataSource,
     ) { }
 
     findRoleById(id: string): Promise<RoleEntity | null> {
@@ -33,7 +31,7 @@ export class RoleRepository implements IRoleRepository {
     findRoleByCode(code: string): Promise<RoleEntity | null> {
         return this.roleOrmRepository.findOne({
             where: {
-                code
+                code,
             },
         });
     }
@@ -50,21 +48,21 @@ export class RoleRepository implements IRoleRepository {
         return this.roleOrmRepository.save(role);
     }
 
-    async findExistingPermissionIds(permissionIds: string[]): Promise<string[]> {
-        if (permissionIds.length === 0) {
+    async findExistingRoleIds(roleIds: string[]): Promise<string[]> {
+        if (roleIds.length === 0) {
             return [];
         }
 
-        const permissions = await this.permissionOrmRepository.find({
+        const roles = await this.roleOrmRepository.find({
             select: {
                 id: true,
             },
             where: {
-                id: In(permissionIds),
+                id: In(roleIds),
             },
         });
 
-        return permissions.map((permission) => String(permission.id));
+        return roles.map((role) => String(role.id));
     }
 
     async findPermissionIdsByRoleId(roleId: string): Promise<string[]> {
@@ -82,35 +80,33 @@ export class RoleRepository implements IRoleRepository {
         );
     }
 
-    async createRolePermissions(
+    async setRolePermissions(
         roleId: string,
-        permissionIds: string[],
+        addedPermissionIds: string[],
+        removedPermissionIds: string[],
     ): Promise<void> {
-        if (permissionIds.length === 0) {
+        if (addedPermissionIds.length === 0 && removedPermissionIds.length === 0) {
             return;
         }
 
-        const rolePermissions = permissionIds.map((permissionId) =>
-            this.rolePermissionOrmRepository.create({
-                roleId,
-                permissionId,
-            }),
-        );
+        await this.dataSource.transaction(async (manager) => {
+            if (removedPermissionIds.length > 0) {
+                await manager.delete(RolePermissionEntity, {
+                    roleId,
+                    permissionId: In(removedPermissionIds),
+                });
+            }
 
-        await this.rolePermissionOrmRepository.save(rolePermissions);
-    }
+            if (addedPermissionIds.length > 0) {
+                const rolePermissions = addedPermissionIds.map((permissionId) =>
+                    manager.create(RolePermissionEntity, {
+                        roleId,
+                        permissionId,
+                    }),
+                );
 
-    async deleteRolePermissions(
-        roleId: string,
-        permissionIds: string[],
-    ): Promise<void> {
-        if (permissionIds.length === 0) {
-            return;
-        }
-
-        await this.rolePermissionOrmRepository.delete({
-            roleId,
-            permissionId: In(permissionIds),
+                await manager.save(RolePermissionEntity, rolePermissions);
+            }
         });
     }
 }

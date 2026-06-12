@@ -1,26 +1,43 @@
-import { Injectable } from '@nestjs/common';
-import { CreatePermissionDto } from './dto/create-permission.dto';
-import { UpdatePermissionDto } from './dto/update-permission.dto';
+import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestError } from 'src/commons/core/response/error/badrequest.error';
+import { LoggerService } from 'src/infrastructures/logger/logger.service';
+import type { IPermissionRepository } from './repository/permission.repository.interface';
+import { PERMISSION_REPOSITORY } from './repository/permission.repository.interface';
 
 @Injectable()
 export class PermissionService {
-  create(createPermissionDto: CreatePermissionDto) {
-    return 'This action adds a new permission';
-  }
 
-  findAll() {
-    return `This action returns all permission`;
-  }
+  constructor(
+    @Inject(LoggerService)
+    private readonly logger: LoggerService,
+    @Inject(PERMISSION_REPOSITORY)
+    private readonly permissionRepository: IPermissionRepository,
+  ) { }
 
-  findOne(id: number) {
-    return `This action returns a #${id} permission`;
-  }
+  async validatePermissionIdsExist(permissionIds: string[]): Promise<void> {
+    if (permissionIds.length === 0) {
+      return;
+    }
 
-  update(id: number, updatePermissionDto: UpdatePermissionDto) {
-    return `This action updates a #${id} permission`;
-  }
+    const existingPermissionIds =
+      await this.permissionRepository.findExistingPermissionIds(permissionIds);
 
-  remove(id: number) {
-    return `This action removes a #${id} permission`;
+    if (existingPermissionIds.length === permissionIds.length) {
+      return;
+    }
+
+    const existingPermissionIdSet = new Set(existingPermissionIds);
+
+    const missingPermissionIds = permissionIds.filter(
+      (permissionId) => !existingPermissionIdSet.has(permissionId),
+    );
+
+    this.logger.error(
+      `One or more permission IDs are invalid: ${missingPermissionIds}`,
+    );
+
+    throw new BadRequestError('One or more permission IDs are invalid', {
+      missingPermissionIds,
+    });
   }
 }
