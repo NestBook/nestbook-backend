@@ -2,6 +2,9 @@
 /dist
 /node_modules
 /build
+# docker
+.env.docker
+docker-compose.yml
 
 /test-http/
 
