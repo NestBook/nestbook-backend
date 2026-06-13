@@ -1,12 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
 import { RoomTypeEntity } from '../entities/room-type.entity';
-
 import { CreateRoomTypePayload } from '../payload/create-room-type.payload';
 import { UpdateRoomTypePayload } from '../payload/update-room-type.payload';
-
 import type { IRoomTypeRepository } from './room-type.repository.interface';
 
 @Injectable()
