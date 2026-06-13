@@ -4,15 +4,21 @@ import { CreateRolePayload } from '../payload/create-role.payload';
 export const ROLE_REPOSITORY = Symbol('ROLE_REPOSITORY');
 
 export interface IRoleRepository {
+    findAllRoles(): Promise<RoleEntity[]>;
+
     findRoleById(id: string): Promise<RoleEntity | null>;
 
     findRoleByCode(code: string): Promise<RoleEntity | null>;
+
+    findRolesByIds(roleIds: string[]): Promise<RoleEntity[]>;
 
     createRole(payload: CreateRolePayload): Promise<RoleEntity>;
 
     findExistingRoleIds(roleIds: string[]): Promise<string[]>;
 
     findPermissionIdsByRoleId(roleId: string): Promise<string[]>;
+
+    findPermissionIdsByRoleIds(roleIds: string[]): Promise<string[]>;
 
     setRolePermissions(
         roleId: string,
