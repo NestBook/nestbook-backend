@@ -22,6 +22,8 @@ import { ResourceModule } from './modules/resource/resource.module';
 import { HotelModule } from './modules/hotel/hotel.module';
 import { RoomTypeModule } from './modules/room-type/room-type.module';
 import { PublicHotelModule } from './modules/room-type/public-hotel.module';
+import { AvailabilityModule } from './modules/availability/availability.module';
+import { BookingModule } from './modules/booking/booking.module';
 
 @Module({
   imports: [
@@ -41,7 +43,9 @@ import { PublicHotelModule } from './modules/room-type/public-hotel.module';
     ResourceModule,
     HotelModule,
     RoomTypeModule,
-    PublicHotelModule
+    PublicHotelModule,
+    AvailabilityModule,
+    BookingModule,
   ],
   controllers: [AppController],
   providers: [

@@ -39,6 +39,9 @@ export class RoomTypeEntity {
   })
   status!: RoomTypeStatus;
 
+  @Column({ type: 'int', unsigned: true, default: 1 })
+  totalQuantity!: number;
+
   @CreateDateColumn()
   createdAt!: Date;
 
