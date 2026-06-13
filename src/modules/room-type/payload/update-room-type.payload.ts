@@ -5,5 +5,6 @@ export interface UpdateRoomTypePayload {
     bedType?: string;
     price?: number;
     amenities?: string[];
+    totalQuantity: number;
     status?: RoomTypeStatus;
 }

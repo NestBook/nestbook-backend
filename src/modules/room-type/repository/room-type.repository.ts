@@ -11,7 +11,7 @@ export class RoomTypeRepository implements IRoomTypeRepository {
   constructor(
     @InjectRepository(RoomTypeEntity)
     private readonly repo: Repository<RoomTypeEntity>,
-  ) {}
+  ) { }
 
   findById(id: string): Promise<RoomTypeEntity | null> {
     return this.repo.findOne({ where: { id } });
@@ -19,6 +19,10 @@ export class RoomTypeRepository implements IRoomTypeRepository {
 
   findByHotelId(hotelId: string): Promise<RoomTypeEntity[]> {
     return this.repo.find({ where: { hotelId } });
+  }
+
+  async findAll(): Promise<RoomTypeEntity[]> {
+    return this.repo.find();
   }
 
   async createRoomType(
@@ -38,5 +42,9 @@ export class RoomTypeRepository implements IRoomTypeRepository {
 
   async softDeleteRoomType(id: string): Promise<void> {
     await this.repo.softDelete(id);
+  }
+
+  getManager() {
+    return this.repo.manager;
   }
 }
