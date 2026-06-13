@@ -1,4 +1,5 @@
-import { IsArray, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsArray, IsInt, IsPositive, IsString, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateRoomTypeDto {
   @IsString()
@@ -16,4 +17,9 @@ export class CreateRoomTypeDto {
 
   @IsArray()
   amenities!: string[];
+
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  totalQuantity!: number;
 }

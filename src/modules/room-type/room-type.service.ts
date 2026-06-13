@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { RoomTypeEntity } from './entities/room-type.entity';
+import { Injectable, forwardRef } from '@nestjs/common';
+import { RoomTypeEntity, RoomTypeStatus } from './entities/room-type.entity';
 import { CreateRoomTypeDto } from './dto/create-room-type.dto';
 import { UpdateRoomTypeDto } from './dto/update-room-type.dto';
 import type { IRoomTypeRepository } from './repository/room-type.repository.interface';
@@ -13,6 +13,15 @@ import { REDIS_CLIENT } from 'src/infrastructures/redis/redis.constans';
 const ROOM_TYPES_KEY = (hotelId: string) => `room-types:hotel:${hotelId}`;
 const CACHE_TTL = 60 * 5;
 
+export type RoomTypeBasicInfo = {
+    id: string;
+    hotelId: string;
+    name: string;
+    price: number;
+    totalQuantity: number;
+    status: RoomTypeStatus;
+};
+
 @Injectable()
 export class RoomTypeService {
     constructor(
@@ -22,6 +31,7 @@ export class RoomTypeService {
         @Inject(REDIS_CLIENT)
         private readonly redis: any,
 
+        @Inject(forwardRef(() => HotelService))
         private readonly hotelService: HotelService,
     ) { }
 
@@ -43,6 +53,7 @@ export class RoomTypeService {
             bedType: dto.bedType,
             price: dto.price,
             amenities: dto.amenities,
+            totalQuantity: dto.totalQuantity,
         });
 
         await this.redis.del(ROOM_TYPES_KEY(dto.hotelId));
@@ -100,6 +111,7 @@ export class RoomTypeService {
             bedType: dto.bedType,
             price: dto.price,
             amenities: dto.amenities,
+            totalQuantity: dto.totalQuantity,
         });
 
         await this.redis.del(ROOM_TYPES_KEY(room.hotelId));
@@ -115,5 +127,17 @@ export class RoomTypeService {
         await this.redis.del(ROOM_TYPES_KEY(room.hotelId));
 
         return { deleted: true };
+    }
+
+    async getByHotelRaw(hotelId: string): Promise<RoomTypeEntity[]> {
+        return this.roomTypeRepository.findByHotelId(hotelId);
+    }
+
+    async getManager() {
+        return this.roomTypeRepository.getManager();
+    }
+
+    async findAll(): Promise<RoomTypeEntity[]> {
+        return this.roomTypeRepository.findAll();
     }
 }

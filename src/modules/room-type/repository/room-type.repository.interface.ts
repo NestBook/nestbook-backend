@@ -19,4 +19,8 @@ export interface IRoomTypeRepository {
   ): Promise<RoomTypeEntity>;
 
   softDeleteRoomType(id: string): Promise<void>;
+
+  getManager(): import('typeorm').EntityManager;
+
+  findAll(): Promise<RoomTypeEntity[]>;
 }
