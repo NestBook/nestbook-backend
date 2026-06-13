@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Get,
   HttpCode,
   HttpStatus,
   Param,
@@ -16,12 +15,6 @@ import { SyncRolePermissionsDto } from './dto/sync-role-permission.dto';
 @Controller('roles')
 export class RoleController {
   constructor(private readonly roleService: RoleService) { }
-
-  @Get()
-  @HttpCode(HttpStatus.OK)
-  findAll() {
-    return this.roleService.findAll();
-  }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
