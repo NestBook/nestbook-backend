@@ -18,7 +18,7 @@ export class CreateAvailabilityBlockDto {
 
   @Type(() => Number)
   @IsNumber()
-  quantity!: number;
+  blockedQuantity!: number;
 
   @IsOptional()
   @IsString()

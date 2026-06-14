@@ -10,7 +10,7 @@ import { ConflictError } from 'src/commons/core/response/error/conflict.error';
 import { HotelService } from '../hotel/hotel.service';
 import { REDIS_CLIENT } from 'src/infrastructures/redis/redis.constans';
 
-const ROOM_TYPES_KEY = (hotelId: string) => `room-types:hotel:${hotelId}`;
+const ROOM_TYPES_KEY = (hotelId: string) => `nestbook:room-types:hotel:${hotelId}`;
 const CACHE_TTL = 60 * 5;
 
 export type RoomTypeBasicInfo = {

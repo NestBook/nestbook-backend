@@ -6,7 +6,8 @@ import { RoomTypeEntity, RoomTypeStatus } from '../room-type/entities/room-type.
 import { NotFoundError } from 'src/commons/core/response/error/notfound.error';
 import { REDIS_CLIENT } from 'src/infrastructures/redis/redis.constans';
 
-const PUBLIC_HOTEL_KEY = (hotelId: string) => `hotel:public:${hotelId}`;
+const PUBLIC_HOTEL_DETAIL_KEY = (hotelId: string) => `nestbook:hotel:public:detail:${hotelId}`;
+const PUBLIC_HOTEL_ROOM_TYPES_KEY = (hotelId: string) => `nestbook:hotel:public:room-types:${hotelId}`;
 const CACHE_TTL = 60 * 5;
 
 @Injectable()
@@ -22,8 +23,50 @@ export class PublicHotelService {
         private readonly redis: any,
     ) { }
 
+    async getDetail(hotelId: string) {
+        const key = PUBLIC_HOTEL_DETAIL_KEY(hotelId);
+
+        const cached = await this.redis.get(key);
+        if (cached) return JSON.parse(cached);
+
+        const hotel = await this.hotelRepo.findOne({
+            where: {
+                id: hotelId,
+                status: HotelStatus.ACTIVE,
+            },
+            select: {
+                id: true,
+                name: true,
+                city: true,
+                address: true,
+                phone: true,
+                description: true,
+            },
+        });
+
+        if (!hotel) {
+            throw new NotFoundError('Hotel not found');
+        }
+
+        const result = {
+            ...hotel,
+            averageRating: 0,
+            reviewCount: 0,
+            images: [],
+        };
+
+        await this.redis.set(
+            key,
+            JSON.stringify(result),
+            'EX',
+            CACHE_TTL,
+        );
+
+        return result;
+    }
+
     async getRoomTypes(hotelId: string) {
-        const key = PUBLIC_HOTEL_KEY(hotelId);
+        const key = PUBLIC_HOTEL_ROOM_TYPES_KEY(hotelId);
 
         const cached = await this.redis.get(key);
         if (cached) return JSON.parse(cached);
@@ -52,6 +95,7 @@ export class PublicHotelService {
                     bedType: true,
                     price: true,
                     amenities: true,
+                    totalQuantity: true,
                 },
                 order: {
                     price: 'ASC',
@@ -63,7 +107,17 @@ export class PublicHotelService {
             throw new NotFoundError('Hotel not found');
         }
 
-        const result = { hotel, roomTypes };
+        const result = roomTypes.map((roomType) => ({
+            id: roomType.id,
+            hotelId,
+            name: roomType.name,
+            bedType: roomType.bedType,
+            amenities: roomType.amenities,
+            pricePerNight: roomType.price,
+            totalQuantity: roomType.totalQuantity,
+            availableQuantity: roomType.totalQuantity,
+            images: [],
+        }));
 
         await this.redis.set(
             key,

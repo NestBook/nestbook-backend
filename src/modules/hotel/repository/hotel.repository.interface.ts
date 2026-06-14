@@ -6,6 +6,8 @@ export const HOTEL_REPOSITORY =
     Symbol('HOTEL_REPOSITORY');
 
 export interface IHotelRepository {
+    findHotels(): Promise<HotelEntity[]>;
+
     findHotelById(
         id: string,
     ): Promise<HotelEntity | null>;

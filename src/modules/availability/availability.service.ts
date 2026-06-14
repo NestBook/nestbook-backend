@@ -12,7 +12,8 @@ export class AvailabilityService {
 
     @Inject(AVAILABILITY_BLOCK_REPOSITORY)
     private readonly blockRepo: IAvailabilityBlockRepository,
-  ) {}
+
+  ) { }
 
   check(ctx: AvailabilityContext) {
     return this.engine.calculate(ctx);
@@ -23,7 +24,7 @@ export class AvailabilityService {
       roomTypeId: dto.roomTypeId,
       startDate: new Date(dto.startDate),
       endDate: new Date(dto.endDate),
-      quantity: dto.quantity,
+      quantity: dto.blockedQuantity,
       reason: dto.reason ?? null,
     });
   }

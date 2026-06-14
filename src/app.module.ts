@@ -18,7 +18,6 @@ import { UserModule } from './modules/user/user.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { RoleModule } from './modules/role/role.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { ResourceModule } from './modules/resource/resource.module';
 import { HotelModule } from './modules/hotel/hotel.module';
 import { RoomTypeModule } from './modules/room-type/room-type.module';
 import { PublicHotelModule } from './modules/room-type/public-hotel.module';
@@ -40,7 +39,6 @@ import { BookingModule } from './modules/booking/booking.module';
     RoleModule,
     PermissionModule,
     AuthModule,
-    ResourceModule,
     HotelModule,
     RoomTypeModule,
     PublicHotelModule,
