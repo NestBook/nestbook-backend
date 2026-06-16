@@ -78,4 +78,8 @@ export class HotelRepository implements IHotelRepository {
             where: { ownerId },
         });
     }
+
+    findAll(): Promise<HotelEntity[]> {
+        return this.hotelOrmRepository.find();
+    }
 }

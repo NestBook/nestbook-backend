@@ -36,6 +36,13 @@ export class HotelController {
         return this.hotelService.findById(hotelId);
     }
 
+    @Permissions('hotel.read')
+    @Get()
+    @HttpCode(HttpStatus.OK)
+    findAll() {
+        return this.hotelService.findAll();
+    }
+
     @Permissions('hotel.update')
     @Patch(':hotelId')
     @HttpCode(HttpStatus.OK)

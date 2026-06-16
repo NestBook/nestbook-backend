@@ -133,6 +133,10 @@ export class HotelService {
         return hotel;
     }
 
+    async findAll(): Promise<HotelEntity[]> {
+        return this.hotelRepository.findAll();
+    }
+
     async updateOwnedHotel(
         ownerId: string,
         hotelId: string,
