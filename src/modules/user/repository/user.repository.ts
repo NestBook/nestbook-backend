@@ -39,6 +39,10 @@ export class UserRepository implements IUserRepository {
         });
     }
 
+    async findAll(): Promise<UserEntity[]> {
+        return this.userOrmRepository.find();
+    }
+
     async createUser(payload: CreateUserPayload): Promise<UserEntity> {
         const user = this.userOrmRepository.create({
             email: payload.email,
