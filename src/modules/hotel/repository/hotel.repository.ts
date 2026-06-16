@@ -14,7 +14,7 @@ export class HotelRepository implements IHotelRepository {
     constructor(
         @InjectRepository(HotelEntity)
         private readonly hotelOrmRepository: Repository<HotelEntity>,
-    ) {}
+    ) { }
 
     findHotelById(id: string): Promise<HotelEntity | null> {
         return this.hotelOrmRepository.findOne({
@@ -24,10 +24,10 @@ export class HotelRepository implements IHotelRepository {
         });
     }
 
-    findHotelByPhone(phone: string): Promise<HotelEntity|null> {
-      return this.hotelOrmRepository.findOne({
-        where: {phone},
-      });
+    findHotelByPhone(phone: string): Promise<HotelEntity | null> {
+        return this.hotelOrmRepository.findOne({
+            where: { phone },
+        });
     }
 
     async createHotel(
@@ -71,5 +71,11 @@ export class HotelRepository implements IHotelRepository {
 
     async softDeleteHotel(id: string): Promise<void> {
         await this.hotelOrmRepository.softDelete(id);
+    }
+
+    findByOwnerId(ownerId: string): Promise<HotelEntity[]> {
+        return this.hotelOrmRepository.find({
+            where: { ownerId },
+        });
     }
 }
