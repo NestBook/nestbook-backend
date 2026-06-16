@@ -12,6 +12,7 @@ import { RoomTypeModule } from '../room-type/room-type.module';
 import { AvailabilityModule } from '../availability/availability.module';
 
 import { HotelSearchController } from './hotel-search.controller';
+import { OwnerHotelController } from './owner-hotel.controller';
 import { HotelSearchService } from './hotel-search.service';
 
 @Module({
@@ -26,6 +27,7 @@ import { HotelSearchService } from './hotel-search.service';
     controllers: [
         HotelController,        // admin
         HotelSearchController,  // public
+        OwnerHotelController,   // owner
     ],
 
     providers: [

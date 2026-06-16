@@ -1,0 +1,89 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: nestbook-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: nestbook
+      MYSQL_USER: nestbook
+      MYSQL_PASSWORD: nestbook
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - nestbook-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: nestbook-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - nestbook-net
+
+  minio:
+    image: minio/minio:latest
+    container_name: nestbook-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: nestbook
+      MINIO_ROOT_PASSWORD: nestbook
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - nestbook-net
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nestbook-backend
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - redis
+      - minio
+    ports:
+      - "8080:8080"
+    environment:
+      APP_PORT: 8080
+
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USERNAME: nestbook
+      DB_PASSWORD: nestbook
+      DB_DATABASE: nestbook
+
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      S3_REGION: us-east-1
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: nestbook
+      S3_SECRET_KEY: nestbook
+      S3_BUCKET: nestbook
+      S3_FORCE_PATH_STYLE: "true"
+
+      LOG_LEVEL: info
+    networks:
+      - nestbook-net
+
+volumes:
+  mysql_data:
+  redis_data:
+  minio_data:
+
+networks:
+  nestbook-net:
+    driver: bridge
