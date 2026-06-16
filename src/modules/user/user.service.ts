@@ -55,6 +55,9 @@ export class UserService {
     return this.mapUserToAccessResponse(user);
   }
 
+  async findAll(): Promise<UserEntity[]> {
+    return this.userRepository.findAll();
+  }
 
   async hasPermissions(
     userId: string,

@@ -29,4 +29,6 @@ export interface IUserRepository {
         addedRoleIds: string[],
         removedRoleIds: string[],
     ): Promise<void>;
+
+    findAll(): Promise<UserEntity[]>;
 }
