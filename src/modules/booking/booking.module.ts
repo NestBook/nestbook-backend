@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { RoomTypeModule } from '../room-type/room-type.module';
 import { AvailabilityModule } from '../availability/availability.module';
+import { InvoiceModule } from '../invoice/invoice.module';
 import { BookingController } from './booking.controller';
 import { BookingService } from './booking.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -15,6 +16,7 @@ import { RoomTypeEntity } from '../room-type/entities/room-type.entity';
   imports: [
     RoomTypeModule,
     AvailabilityModule,
+    InvoiceModule,
     RedisModule,
     LoggerModule,
     TypeOrmModule.forFeature([

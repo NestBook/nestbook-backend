@@ -23,6 +23,7 @@ import { RoomTypeModule } from './modules/room-type/room-type.module';
 import { PublicHotelModule } from './modules/room-type/public-hotel.module';
 import { AvailabilityModule } from './modules/availability/availability.module';
 import { BookingModule } from './modules/booking/booking.module';
+import { InvoiceModule } from './modules/invoice/invoice.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { BookingModule } from './modules/booking/booking.module';
     PublicHotelModule,
     AvailabilityModule,
     BookingModule,
+    InvoiceModule,
   ],
   controllers: [AppController],
   providers: [
