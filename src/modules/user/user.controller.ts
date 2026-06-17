@@ -45,6 +45,13 @@ export class UserController {
     return this.userService.update(userId, dto);
   }
 
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @Permissions('user.read')
+  findAll() {
+    return this.userService.findAll();
+  }
+
   @Delete(':userId')
   @HttpCode(HttpStatus.OK)
   @Permissions('user.delete')
