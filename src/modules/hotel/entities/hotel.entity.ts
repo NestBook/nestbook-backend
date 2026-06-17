@@ -50,6 +50,9 @@ export class HotelEntity {
     })
     status!: HotelStatus;
 
+    @Column({ type: 'json', nullable: true })
+    images!: string[] | null;
+
     @CreateDateColumn({
         name: 'created_at',
         type: 'datetime',

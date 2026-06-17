@@ -41,6 +41,7 @@ export class PublicHotelService {
                 address: true,
                 phone: true,
                 description: true,
+                images: true,
             },
         });
 
@@ -50,9 +51,9 @@ export class PublicHotelService {
 
         const result = {
             ...hotel,
+            images: hotel.images ?? [],
             averageRating: 0,
             reviewCount: 0,
-            images: [],
         };
 
         await this.redis.set(
@@ -96,6 +97,7 @@ export class PublicHotelService {
                     price: true,
                     amenities: true,
                     totalQuantity: true,
+                    images: true,
                 },
                 order: {
                     price: 'ASC',
@@ -116,7 +118,7 @@ export class PublicHotelService {
             pricePerNight: roomType.price,
             totalQuantity: roomType.totalQuantity,
             availableQuantity: roomType.totalQuantity,
-            images: [],
+            images: roomType.images ?? [],
         }));
 
         await this.redis.set(

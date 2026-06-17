@@ -1,14 +1,14 @@
-import { Injectable, forwardRef } from '@nestjs/common';
+import { Injectable, forwardRef, Inject } from '@nestjs/common';
 import { RoomTypeEntity, RoomTypeStatus } from './entities/room-type.entity';
 import { CreateRoomTypeDto } from './dto/create-room-type.dto';
 import { UpdateRoomTypeDto } from './dto/update-room-type.dto';
 import type { IRoomTypeRepository } from './repository/room-type.repository.interface';
 import { ROOM_TYPE_REPOSITORY } from './repository/room-type.repository.interface';
-import { Inject } from '@nestjs/common';
 import { NotFoundError } from 'src/commons/core/response/error/notfound.error';
 import { ConflictError } from 'src/commons/core/response/error/conflict.error';
 import { HotelService } from '../hotel/hotel.service';
 import { REDIS_CLIENT } from 'src/infrastructures/redis/redis.constans';
+import { S3Service } from 'src/infrastructures/s3/s3.service';
 
 const ROOM_TYPES_KEY = (hotelId: string) => `nestbook:room-types:hotel:${hotelId}`;
 const CACHE_TTL = 60 * 5;
@@ -33,6 +33,8 @@ export class RoomTypeService {
 
         @Inject(forwardRef(() => HotelService))
         private readonly hotelService: HotelService,
+
+        private readonly s3Service: S3Service,
     ) { }
 
     async create(dto: CreateRoomTypeDto): Promise<RoomTypeEntity> {
@@ -139,5 +141,15 @@ export class RoomTypeService {
 
     async findAll(): Promise<RoomTypeEntity[]> {
         return this.roomTypeRepository.findAll();
+    }
+
+    async uploadRoomTypeImage(id: string, file: Express.Multer.File): Promise<RoomTypeEntity> {
+        const room = await this.findById(id);
+        const key = `room-types/${id}/${Date.now()}-${file.originalname}`;
+        const { url } = await this.s3Service.uploadFile(file, key);
+        room.images = [...(room.images ?? []), url];
+        const updated = await this.roomTypeRepository.updateRoomType(room, { totalQuantity: room.totalQuantity });
+        await this.redis.del(ROOM_TYPES_KEY(room.hotelId));
+        return updated;
     }
 }
