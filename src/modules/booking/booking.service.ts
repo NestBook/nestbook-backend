@@ -28,6 +28,7 @@ import { BadRequestError } from 'src/commons/core/response/error/badrequest.erro
 import { NotFoundError } from 'src/commons/core/response/error/notfound.error';
 import { HotelEntity } from '../hotel/entities/hotel.entity';
 import { RoomTypeEntity } from '../room-type/entities/room-type.entity';
+import { InvoiceService } from '../invoice/invoice.service';
 
 const BOOKING_HOLD_TTL_SECONDS = 60 * 2;
 const BOOKING_HOLD_KEY_PREFIX = 'nestbook:booking:hold';
@@ -47,6 +48,8 @@ export class BookingService {
     private readonly redisService: RedisService,
 
     private readonly dataSource: DataSource,
+
+    private readonly invoiceService: InvoiceService,
 
     @InjectRepository(HotelEntity)
     private readonly hotelRepository: Repository<HotelEntity>,
@@ -222,6 +225,7 @@ export class BookingService {
 
       const saved = await manager.save(BookingEntity, booking);
 
+      await this.invoiceService.createForBooking(saved, manager);
       await this.removeBookingHold(saved);
 
       return this.mapToResponse(saved);
