@@ -36,4 +36,9 @@ export class BookingController {
   ) {
     return new OkResponse(await this.bookingService.cancel(bookingCode, dto));
   }
+
+  @Patch(':bookingCode/pay')
+  async confirmPayment(@Param('bookingCode') bookingCode: string) {
+    return new OkResponse(await this.bookingService.confirmPayment(bookingCode));
+  }
 }

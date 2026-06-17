@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { BookingQuoteDto } from './dto/booking-quote.dto';
@@ -45,6 +45,8 @@ export class BookingService {
     private readonly availabilityService: AvailabilityService,
 
     private readonly redisService: RedisService,
+
+    private readonly dataSource: DataSource,
 
     @InjectRepository(HotelEntity)
     private readonly hotelRepository: Repository<HotelEntity>,
@@ -198,6 +200,32 @@ export class BookingService {
     await this.removeBookingHold(cancelledBooking);
 
     return this.mapToResponse(cancelledBooking);
+  }
+
+  async confirmPayment(bookingCode: string): Promise<BookingResponse> {
+    return this.dataSource.transaction(async (manager) => {
+      const booking = await manager.findOne(BookingEntity, {
+        where: { bookingCode },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (!booking) {
+        throw new NotFoundError('Booking not found');
+      }
+
+      if (booking.bookingStatus !== BookingStatus.PENDING_PAYMENT) {
+        throw new BadRequestError('Booking is not awaiting payment');
+      }
+
+      booking.bookingStatus = BookingStatus.CONFIRMED;
+      booking.paymentStatus = BookingPaymentStatus.PAID;
+
+      const saved = await manager.save(BookingEntity, booking);
+
+      await this.removeBookingHold(saved);
+
+      return this.mapToResponse(saved);
+    });
   }
 
   private async getBookingByCodeOrThrow(
