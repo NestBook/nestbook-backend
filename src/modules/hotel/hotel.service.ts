@@ -137,6 +137,10 @@ export class HotelService {
         return this.hotelRepository.findAll();
     }
 
+    async findAllActive(): Promise<HotelEntity[]> {
+        return this.hotelRepository.findAllActive();
+    }
+
     async updateOwnedHotel(
         ownerId: string,
         hotelId: string,

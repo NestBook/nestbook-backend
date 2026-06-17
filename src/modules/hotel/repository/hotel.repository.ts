@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { HotelEntity } from '../entities/hotel.entity';
+import { HotelStatus } from '../entities/hotel.entity';
 
 import { CreateHotelPayload } from '../payload/create-hotel.payload';
 import { UpdateHotelPayload } from '../payload/update-hotel.payload';
@@ -81,5 +82,13 @@ export class HotelRepository implements IHotelRepository {
 
     findAll(): Promise<HotelEntity[]> {
         return this.hotelOrmRepository.find();
+    }
+
+    findAllActive(): Promise<HotelEntity[]> {
+        return this.hotelOrmRepository.find({
+            where: {
+                status: HotelStatus.ACTIVE,
+            },
+        });
     }
 }
