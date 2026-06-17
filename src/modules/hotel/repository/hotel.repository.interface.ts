@@ -6,8 +6,6 @@ export const HOTEL_REPOSITORY =
     Symbol('HOTEL_REPOSITORY');
 
 export interface IHotelRepository {
-    findHotels(): Promise<HotelEntity[]>;
-
     findHotelById(
         id: string,
     ): Promise<HotelEntity | null>;
@@ -30,4 +28,6 @@ export interface IHotelRepository {
     findByOwnerId(ownerId: string): Promise<HotelEntity[]>;
 
     findAll(): Promise<HotelEntity[]>;
+
+    findAllActive(): Promise<HotelEntity[]>;
 }
