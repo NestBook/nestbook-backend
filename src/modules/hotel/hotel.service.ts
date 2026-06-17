@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConflictError } from 'src/commons/core/response/error/conflict.error';
 import { NotFoundError } from 'src/commons/core/response/error/notfound.error';
+import { ForbiddenError } from 'src/commons/core/response/error/forbidden.error';
 import { LoggerService } from 'src/infrastructures/logger/logger.service';
 import { UserService } from '../user/user.service';
 import { AssignHotelOwnerDto } from './dto/assign-hotel-owner.dto';
@@ -122,6 +123,38 @@ export class HotelService {
         return updated;
     }
 
+    async findByOwnerId(ownerId: string) {
+        return this.hotelRepository.findByOwnerId(ownerId);
+    }
+
+    async findOwnedHotelById(ownerId: string, hotelId: string) {
+        const hotel = await this.getHotelOrThrow(hotelId);
+
+        if (hotel.ownerId !== ownerId) {
+            throw new ForbiddenError('Not your hotel');
+        }
+
+        return hotel;
+    }
+
+    async findAll(): Promise<HotelEntity[]> {
+        return this.hotelRepository.findAll();
+    }
+
+    async updateOwnedHotel(
+        ownerId: string,
+        hotelId: string,
+        dto: UpdateHotelDto,
+    ) {
+        const hotel = await this.getHotelOrThrow(hotelId);
+
+        if (hotel.ownerId !== ownerId) {
+            throw new ForbiddenError('Not your hotel');
+        }
+
+        return this.update(hotelId, dto);
+    }
+
     private async getHotelOrThrow(
         hotelId: string,
     ): Promise<HotelEntity> {
@@ -132,7 +165,7 @@ export class HotelService {
         if (!hotel) {
             this.logger.error(`Hotel not found: ${hotelId}`);
 
-            throw new NotFoundError('Hotel not found');
+            throw new ForbiddenError('Hotel not found');
         }
 
         return hotel;

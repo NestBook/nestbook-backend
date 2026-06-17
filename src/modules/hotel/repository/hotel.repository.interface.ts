@@ -26,4 +26,8 @@ export interface IHotelRepository {
     softDeleteHotel(
         id: string,
     ): Promise<void>;
+
+    findByOwnerId(ownerId: string): Promise<HotelEntity[]>;
+
+    findAll(): Promise<HotelEntity[]>;
 }
