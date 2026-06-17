@@ -6,8 +6,9 @@ import { RoomTypeEntity, RoomTypeStatus } from '../room-type/entities/room-type.
 import { NotFoundError } from 'src/commons/core/response/error/notfound.error';
 import { REDIS_CLIENT } from 'src/infrastructures/redis/redis.constans';
 
-const PUBLIC_HOTEL_DETAIL_KEY = (hotelId: string) => `nestbook:hotel:public:detail:${hotelId}`;
-const PUBLIC_HOTEL_ROOM_TYPES_KEY = (hotelId: string) => `nestbook:hotel:public:room-types:${hotelId}`;
+const HOTEL_DETAIL_KEY = (id: string) => `hotel:public:detail:${id}`;
+const HOTEL_ROOM_TYPES_KEY = (id: string) => `hotel:public:room-types:${id}`;
+const HOTEL_LIST_KEY = (q: string) => `hotel:public:list:${q}`;
 const CACHE_TTL = 60 * 5;
 
 @Injectable()
@@ -23,8 +24,37 @@ export class PublicHotelService {
         private readonly redis: any,
     ) { }
 
-    async getDetail(hotelId: string) {
-        const key = PUBLIC_HOTEL_DETAIL_KEY(hotelId);
+    async getHotelList(query: any) {
+        const cacheKey = HOTEL_LIST_KEY(JSON.stringify(query || {}));
+
+        const cached = await this.redis.get(cacheKey);
+        if (cached) return JSON.parse(cached);
+
+        const qb = this.hotelRepo.createQueryBuilder('hotel')
+            .where('hotel.status = :status', { status: HotelStatus.ACTIVE });
+
+        if (query?.city) {
+            qb.andWhere('hotel.city LIKE :city', {
+                city: `%${query.city}%`,
+            });
+        }
+
+        qb.orderBy('hotel.createdAt', 'DESC');
+
+        const hotels = await qb.getMany();
+
+        const result = {
+            success: true,
+            data: hotels,
+        };
+
+        await this.redis.set(cacheKey, JSON.stringify(result), 'EX', 300);
+
+        return result;
+    }
+
+    async getHotelDetail(hotelId: string) {
+        const key = HOTEL_DETAIL_KEY(hotelId);
 
         const cached = await this.redis.get(key);
         if (cached) return JSON.parse(cached);
@@ -49,24 +79,17 @@ export class PublicHotelService {
         }
 
         const result = {
-            ...hotel,
-            averageRating: 0,
-            reviewCount: 0,
-            images: [],
+            success: true,
+            data: hotel,
         };
 
-        await this.redis.set(
-            key,
-            JSON.stringify(result),
-            'EX',
-            CACHE_TTL,
-        );
+        await this.redis.set(key, JSON.stringify(result), 'EX', CACHE_TTL);
 
         return result;
     }
 
     async getRoomTypes(hotelId: string) {
-        const key = PUBLIC_HOTEL_ROOM_TYPES_KEY(hotelId);
+        const key = HOTEL_ROOM_TYPES_KEY(hotelId);
 
         const cached = await this.redis.get(key);
         if (cached) return JSON.parse(cached);
@@ -95,7 +118,6 @@ export class PublicHotelService {
                     bedType: true,
                     price: true,
                     amenities: true,
-                    totalQuantity: true,
                 },
                 order: {
                     price: 'ASC',
@@ -107,17 +129,7 @@ export class PublicHotelService {
             throw new NotFoundError('Hotel not found');
         }
 
-        const result = roomTypes.map((roomType) => ({
-            id: roomType.id,
-            hotelId,
-            name: roomType.name,
-            bedType: roomType.bedType,
-            amenities: roomType.amenities,
-            pricePerNight: roomType.price,
-            totalQuantity: roomType.totalQuantity,
-            availableQuantity: roomType.totalQuantity,
-            images: [],
-        }));
+        const result = { hotel, roomTypes };
 
         await this.redis.set(
             key,
