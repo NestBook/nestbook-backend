@@ -28,4 +28,9 @@ export interface IHotelRepository {
     findByOwnerId(ownerId: string): Promise<HotelEntity[]>;
 
     findAll(): Promise<HotelEntity[]>;
+<<<<<<< HEAD
+=======
+
+    findAllActive(): Promise<HotelEntity[]>;
+>>>>>>> feature-B04-2
 }
