@@ -1,6 +1,7 @@
 import {
     ArgumentsHost,
     Catch,
+    HttpException,
     ExceptionFilter,
     HttpStatus,
 } from '@nestjs/common';
@@ -20,6 +21,29 @@ export class HttpExceptionFilter implements ExceptionFilter {
                     code: exception.code,
                     message: exception.message,
                     ...(exception.fieldErrors && { fieldErrors: exception.fieldErrors }),
+                },
+            });
+        }
+
+        if (exception instanceof HttpException) {
+            const status = exception.getStatus();
+            const errorResponse = exception.getResponse();
+            const message =
+                typeof errorResponse === 'object' &&
+                    errorResponse !== null &&
+                    'message' in errorResponse
+                    ? (errorResponse as { message: string | string[] }).message
+                    : exception.message;
+
+            return response.status(status).json({
+                success: false,
+                error: {
+                    code: status === HttpStatus.BAD_REQUEST
+                        ? 'VALIDATION_ERROR'
+                        : exception.name,
+                    message: Array.isArray(message)
+                        ? message.join(', ')
+                        : message,
                 },
             });
         }

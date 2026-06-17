@@ -15,6 +15,8 @@ import { CreateHotelDto } from './dto/create-hotel.dto';
 import { UpdateHotelDto } from './dto/update-hotel.dto';
 import { AssignHotelOwnerDto } from './dto/assign-hotel-owner.dto';
 import { Permissions } from 'src/commons/decorators/permissions.decorator';
+import { CreatedResponse } from 'src/commons/core/response/success/created.response';
+import { OkResponse } from 'src/commons/core/response/success/ok.response';
 
 @Controller('admin/hotels')
 export class HotelController {
@@ -25,15 +27,22 @@ export class HotelController {
     @Permissions('hotel.create')
     @Post()
     @HttpCode(HttpStatus.CREATED)
-    create(@Body() dto: CreateHotelDto) {
-        return this.hotelService.create(dto);
+    async create(@Body() dto: CreateHotelDto) {
+        return new CreatedResponse(await this.hotelService.create(dto));
+    }
+
+    @Permissions('hotel.read')
+    @Get()
+    @HttpCode(HttpStatus.OK)
+    async findAll() {
+        return new OkResponse(await this.hotelService.findAll());
     }
 
     @Permissions('hotel.read')
     @Get(':hotelId')
     @HttpCode(HttpStatus.OK)
-    findById(@Param('hotelId') hotelId: string) {
-        return this.hotelService.findById(hotelId);
+    async findById(@Param('hotelId') hotelId: string) {
+        return new OkResponse(await this.hotelService.findById(hotelId));
     }
 
     @Permissions('hotel.read')
@@ -46,30 +55,30 @@ export class HotelController {
     @Permissions('hotel.update')
     @Patch(':hotelId')
     @HttpCode(HttpStatus.OK)
-    update(@Param('hotelId') hotelId: string, @Body() dto: UpdateHotelDto) {
-        return this.hotelService.update(hotelId, dto);
+    async update(@Param('hotelId') hotelId: string, @Body() dto: UpdateHotelDto) {
+        return new OkResponse(await this.hotelService.update(hotelId, dto));
     }
 
     @Permissions('hotel.delete')
     @Delete(':hotelId')
     @HttpCode(HttpStatus.OK)
-    remove(@Param('hotelId') hotelId: string) {
-        return this.hotelService.remove(hotelId);
+    async remove(@Param('hotelId') hotelId: string) {
+        return new OkResponse(await this.hotelService.remove(hotelId));
     }
 
     @Permissions('role.assign_permission')
     @Patch(':hotelId/owner')
     @HttpCode(HttpStatus.OK)
-    assignOwner(
+    async assignOwner(
         @Param('hotelId')
         hotelId: string,
 
         @Body()
         dto: AssignHotelOwnerDto,
     ) {
-        return this.hotelService.assignOwner(
+        return new OkResponse(await this.hotelService.assignOwner(
             hotelId,
             dto,
-        );
+        ));
     }
 }

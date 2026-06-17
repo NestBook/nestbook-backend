@@ -16,6 +16,14 @@ export class HotelRepository implements IHotelRepository {
         private readonly hotelOrmRepository: Repository<HotelEntity>,
     ) { }
 
+    findHotels(): Promise<HotelEntity[]> {
+        return this.hotelOrmRepository.find({
+            order: {
+                createdAt: 'DESC',
+            },
+        });
+    }
+
     findHotelById(id: string): Promise<HotelEntity | null> {
         return this.hotelOrmRepository.findOne({
             where: {

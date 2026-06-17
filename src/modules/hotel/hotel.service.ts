@@ -12,7 +12,7 @@ import { HOTEL_REPOSITORY } from './repository/hotel.repository.interface';
 import type { IHotelRepository } from './repository/hotel.repository.interface';
 import { REDIS_CLIENT } from 'src/infrastructures/redis/redis.constans';
 
-const HOTEL_KEY = (id: string) => `hotel:detail:${id}`;
+const HOTEL_KEY = (id: string) => `nestbook:hotel:detail:${id}`;
 const CACHE_TTL = 60 * 5;
 
 @Injectable()
@@ -41,6 +41,10 @@ export class HotelService {
             ownerId: null,
             status: HotelStatus.ACTIVE,
         });
+    }
+
+    async findAll(): Promise<HotelEntity[]> {
+        return this.hotelRepository.findHotels();
     }
 
     async findById(hotelId: string): Promise<HotelEntity> {

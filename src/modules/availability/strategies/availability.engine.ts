@@ -1,44 +1,43 @@
 import { Injectable } from '@nestjs/common';
 
-import { BookingAggregationStrategy } from './booking-aggregation.strategy';
 import { BlockAvailabilityStrategy } from './block-availability.strategy';
 import { RedisHoldStrategy } from './redis-hold.strategy';
+
 import { AvailabilityContext } from '../types/availability-context.type';
 import { AvailabilityResult } from '../types/availability-result.type';
+import { RoomTypeService } from 'src/modules/room-type/room-type.service';
+import { NotFoundError } from 'src/commons/core/response/error/notfound.error';
 
 @Injectable()
 export class AvailabilityEngine {
     constructor(
-        private readonly bookingAggregation:
-            BookingAggregationStrategy,
 
-        private readonly blockStrategy:
-            BlockAvailabilityStrategy,
+        private readonly blockStrategy: BlockAvailabilityStrategy,
 
-        private readonly holdStrategy:
-            RedisHoldStrategy,
+        private readonly holdStrategy: RedisHoldStrategy,
+
+        private readonly roomTypeService: RoomTypeService,
     ) { }
 
-    async calculate(
-        ctx: AvailabilityContext,
-    ): Promise<AvailabilityResult> {
-        const total =
-            await this.bookingAggregation.getTotal(
+    async calculate(ctx: AvailabilityContext): Promise<AvailabilityResult> {
+        const room =
+            await this.roomTypeService.findById(
                 ctx.roomTypeId,
             );
 
-        const blocked =
-            await this.blockStrategy.getBlocked(
-                ctx,
-            );
+        if (!room) {
+            throw new NotFoundError('Room type not found');
+        }
 
-        const held =
-            await this.holdStrategy.getHeld();
+        const total = room.totalQuantity;
+
+        const blocked = await this.blockStrategy.getBlocked(ctx);
+
+        const held = await this.holdStrategy.getHeld(ctx);
 
         const booked = 0;
 
-        const available =
-            total - booked - held - blocked;
+        const available = Math.max(total - booked - held - blocked, 0);
 
         return {
             roomTypeId: ctx.roomTypeId,
@@ -53,8 +52,7 @@ export class AvailabilityEngine {
 
             available,
 
-            canBook:
-                available >= ctx.quantity,
+            canBook: available >= ctx.quantity,
         };
     }
 }

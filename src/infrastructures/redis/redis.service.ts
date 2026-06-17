@@ -53,4 +53,15 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         }
     }
 
+    public async keys(pattern: string): Promise<string[]> {
+        return await this.exceptionWrapper(() => this.redis.keys(pattern));
+    }
+
+    public async mget(keys: string[]): Promise<(string | null)[]> {
+        if (keys.length === 0) {
+            return [];
+        }
+
+        return await this.exceptionWrapper(() => this.redis.mget(keys));
+    }
 }
