@@ -2,6 +2,7 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    Index,
     PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -18,6 +19,14 @@ export class InvoiceEntity {
 
     @Column({ name: 'booking_code', type: 'varchar', length: 50 })
     bookingCode: string;
+
+    @Index()
+    @Column({ name: 'user_id', type: 'bigint', unsigned: true, nullable: true })
+    userId: string | null;
+
+    @Index()
+    @Column({ name: 'hotel_id', type: 'bigint', unsigned: true })
+    hotelId: string;
 
     @Column({ name: 'guest_name', type: 'varchar', length: 150 })
     guestName: string;

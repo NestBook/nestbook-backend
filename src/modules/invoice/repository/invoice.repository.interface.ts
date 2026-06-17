@@ -6,5 +6,7 @@ export const INVOICE_REPOSITORY = Symbol('INVOICE_REPOSITORY');
 
 export interface IInvoiceRepository {
     findByInvoiceCode(invoiceCode: string): Promise<InvoiceEntity | null>;
+    findAllByUserId(userId: string): Promise<InvoiceEntity[]>;
+    findAllByHotelId(hotelId: string): Promise<InvoiceEntity[]>;
     createForBooking(booking: BookingEntity, manager: EntityManager): Promise<InvoiceEntity>;
 }

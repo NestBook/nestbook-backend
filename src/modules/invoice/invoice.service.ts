@@ -26,12 +26,24 @@ export class InvoiceService {
         return this.mapToResponse(invoice);
     }
 
+    async findAllByUserId(userId: string): Promise<InvoiceResponse[]> {
+        const invoices = await this.invoiceRepository.findAllByUserId(userId);
+        return invoices.map(this.mapToResponse);
+    }
+
+    async findAllByHotelId(hotelId: string): Promise<InvoiceResponse[]> {
+        const invoices = await this.invoiceRepository.findAllByHotelId(hotelId);
+        return invoices.map(this.mapToResponse);
+    }
+
     private mapToResponse(invoice: InvoiceEntity): InvoiceResponse {
         return {
             id: String(invoice.id),
             invoiceCode: invoice.invoiceCode,
             bookingId: String(invoice.bookingId),
             bookingCode: invoice.bookingCode,
+            userId: invoice.userId ?? null,
+            hotelId: String(invoice.hotelId),
             guestName: invoice.guestName,
             guestEmail: invoice.guestEmail,
             finalAmount: Number(invoice.finalAmount),
