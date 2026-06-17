@@ -6,9 +6,9 @@ import { RoomTypeEntity, RoomTypeStatus } from '../room-type/entities/room-type.
 import { NotFoundError } from 'src/commons/core/response/error/notfound.error';
 import { REDIS_CLIENT } from 'src/infrastructures/redis/redis.constans';
 
-const HOTEL_DETAIL_KEY = (id: string) => `hotel:public:detail:${id}`;
-const HOTEL_ROOM_TYPES_KEY = (id: string) => `hotel:public:room-types:${id}`;
-const HOTEL_LIST_KEY = (q: string) => `hotel:public:list:${q}`;
+const HOTEL_DETAIL_KEY = (id: string) => `nestbook:hotel:public:detail:${id}`;
+const HOTEL_ROOM_TYPES_KEY = (id: string) => `nestbook:hotel:public:room-types:${id}`;
+const HOTEL_LIST_KEY = (q: string) => `nestbook:hotel:public:list:${q}`;
 const CACHE_TTL = 60 * 5;
 
 @Injectable()
@@ -71,6 +71,7 @@ export class PublicHotelService {
                 address: true,
                 phone: true,
                 description: true,
+                images: true,
             },
         });
 
@@ -80,7 +81,7 @@ export class PublicHotelService {
 
         const result = {
             success: true,
-            data: hotel,
+            data: { ...hotel, images: hotel.images ?? [] },
         };
 
         await this.redis.set(key, JSON.stringify(result), 'EX', CACHE_TTL);
@@ -118,6 +119,8 @@ export class PublicHotelService {
                     bedType: true,
                     price: true,
                     amenities: true,
+                    totalQuantity: true,
+                    images: true,
                 },
                 order: {
                     price: 'ASC',
@@ -129,7 +132,10 @@ export class PublicHotelService {
             throw new NotFoundError('Hotel not found');
         }
 
-        const result = { hotel, roomTypes };
+        const result = {
+            hotel,
+            roomTypes: roomTypes.map((r) => ({ ...r, images: r.images ?? [] })),
+        };
 
         await this.redis.set(
             key,

@@ -3,6 +3,7 @@ import { ConflictError } from 'src/commons/core/response/error/conflict.error';
 import { NotFoundError } from 'src/commons/core/response/error/notfound.error';
 import { ForbiddenError } from 'src/commons/core/response/error/forbidden.error';
 import { LoggerService } from 'src/infrastructures/logger/logger.service';
+import { S3Service } from 'src/infrastructures/s3/s3.service';
 import { UserService } from '../user/user.service';
 import { AssignHotelOwnerDto } from './dto/assign-hotel-owner.dto';
 import { CreateHotelDto } from './dto/create-hotel.dto';
@@ -12,7 +13,7 @@ import { HOTEL_REPOSITORY } from './repository/hotel.repository.interface';
 import type { IHotelRepository } from './repository/hotel.repository.interface';
 import { REDIS_CLIENT } from 'src/infrastructures/redis/redis.constans';
 
-const HOTEL_KEY = (id: string) => `hotel:detail:${id}`;
+const HOTEL_KEY = (id: string) => `nestbook:hotel:detail:${id}`;
 const CACHE_TTL = 60 * 5;
 
 @Injectable()
@@ -27,6 +28,8 @@ export class HotelService {
         private readonly userService: UserService,
 
         private readonly logger: LoggerService,
+
+        private readonly s3Service: S3Service,
     ) { }
 
     async create(dto: CreateHotelDto): Promise<HotelEntity> {
@@ -125,6 +128,21 @@ export class HotelService {
         await this.redis.del(HOTEL_KEY(hotelId));
 
         return updated;
+    }
+
+    async uploadHotelImage(hotelId: string, file: Express.Multer.File): Promise<HotelEntity> {
+        const hotel = await this.getHotelOrThrow(hotelId);
+        const key = `hotels/${hotelId}/${Date.now()}-${file.originalname}`;
+        const { url } = await this.s3Service.uploadFile(file, key);
+        hotel.images = [...(hotel.images ?? []), url];
+        const updated = await this.hotelRepository.updateHotel(hotel, {});
+        await this.redis.del(HOTEL_KEY(hotelId));
+        return updated;
+    }
+
+    async uploadOwnedHotelImage(ownerId: string, hotelId: string, file: Express.Multer.File): Promise<HotelEntity> {
+        await this.findOwnedHotelById(ownerId, hotelId);
+        return this.uploadHotelImage(hotelId, file);
     }
 
     async findByOwnerId(ownerId: string) {

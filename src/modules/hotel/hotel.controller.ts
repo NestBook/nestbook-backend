@@ -8,7 +8,10 @@ import {
     Param,
     Patch,
     Post,
+    UploadedFile,
+    UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 import { HotelService } from './hotel.service';
 import { CreateHotelDto } from './dto/create-hotel.dto';
@@ -57,6 +60,17 @@ export class HotelController {
     @HttpCode(HttpStatus.OK)
     async remove(@Param('hotelId') hotelId: string) {
         return new OkResponse(await this.hotelService.remove(hotelId));
+    }
+
+    @Permissions('hotel.update')
+    @Post(':hotelId/images')
+    @HttpCode(HttpStatus.OK)
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadImage(
+        @Param('hotelId') hotelId: string,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        return new OkResponse(await this.hotelService.uploadHotelImage(hotelId, file));
     }
 
     @Permissions('role.assign_permission')

@@ -42,6 +42,9 @@ export class RoomTypeEntity {
   @Column({ type: 'int', unsigned: true, default: 1 })
   totalQuantity!: number;
 
+  @Column({ type: 'json', nullable: true })
+  images!: string[] | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 
