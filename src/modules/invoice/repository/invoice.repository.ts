@@ -16,6 +16,20 @@ export class InvoiceRepository implements IInvoiceRepository {
         return this.invoiceOrmRepository.findOne({ where: { invoiceCode } });
     }
 
+    findAllByUserId(userId: string): Promise<InvoiceEntity[]> {
+        return this.invoiceOrmRepository.find({
+            where: { userId },
+            order: { issuedAt: 'DESC' },
+        });
+    }
+
+    findAllByHotelId(hotelId: string): Promise<InvoiceEntity[]> {
+        return this.invoiceOrmRepository.find({
+            where: { hotelId },
+            order: { issuedAt: 'DESC' },
+        });
+    }
+
     async createForBooking(booking: BookingEntity, manager: EntityManager): Promise<InvoiceEntity> {
         const invoiceCode = await this.generateInvoiceCode(manager);
 
@@ -23,6 +37,8 @@ export class InvoiceRepository implements IInvoiceRepository {
             invoiceCode,
             bookingId: String(booking.id),
             bookingCode: booking.bookingCode,
+            userId: booking.userId ?? null,
+            hotelId: String(booking.hotelId),
             guestName: booking.guestName,
             guestEmail: booking.guestEmail,
             finalAmount: booking.finalAmount,
