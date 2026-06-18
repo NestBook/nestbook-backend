@@ -37,6 +37,7 @@ import { RoomTypeEntity } from '../room-type/entities/room-type.entity';
 
   exports: [
     BookingService,
+    BOOKING_REPOSITORY,
   ],
 })
 export class BookingModule { }
