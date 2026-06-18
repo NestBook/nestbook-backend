@@ -121,4 +121,12 @@ export class ReviewService {
             payload.status,
         );
     }
+
+    async getHotelRating(hotelId: string) {
+        return this.reviewRepository.getHotelRating(hotelId);
+    }
+
+    async getRatingDistribution(hotelId: string) {
+        return this.reviewRepository.getRatingDistribution(hotelId);
+    }
 }

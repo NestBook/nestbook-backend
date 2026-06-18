@@ -27,4 +27,8 @@ export interface IBookingRepository {
         booking: BookingEntity,
         cancelReason: string | null,
     ): Promise<BookingEntity>;
+
+    findUserBookings(userId: string): Promise<BookingEntity[]>;
+
+    findGuestBookings(): Promise<BookingEntity[]>
 }
