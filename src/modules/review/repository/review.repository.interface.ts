@@ -23,4 +23,13 @@ export interface IReviewRepository {
     id: string,
     status: ReviewStatus,
   ): Promise<void>;
+
+  getHotelRating(hotelId: string): Promise<{
+    avgRating: number;
+    totalReviews: number;
+  }>;
+
+  getRatingDistribution(hotelId: string): Promise<
+    { rating: number; count: number }[]
+  >;
 }
