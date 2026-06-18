@@ -33,6 +33,7 @@ export class ReviewController {
         return new CreatedResponse(await this.reviewService.createReview(dto));
     }
 
+    @Public()
     @Get('/hotels/:id/reviews')
     async getReviews(
         @Param('id') hotelId: string,
@@ -64,11 +65,13 @@ export class ReviewController {
         return new OkResponse(await this.reviewService.updateStatus(id, payload));
     }
 
+    @Public()
     @Get('/hotels/:id/rating')
     async getRating(@Param('id') hotelId: string) {
         return new OkResponse(await this.reviewService.getHotelRating(hotelId));
     }
 
+    @Public()
     @Get('/hotels/:id/rating-distribution')
     async getDistribution(@Param('id') hotelId: string) {
         return new OkResponse(await this.reviewService.getRatingDistribution(hotelId));
