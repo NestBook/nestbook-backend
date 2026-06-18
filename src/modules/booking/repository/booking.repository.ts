@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 
 import {
     BookingEntity,
@@ -24,6 +24,20 @@ export class BookingRepository implements IBookingRepository {
             where: {
                 id,
             },
+        });
+    }
+
+    async findUserBookings(userId: string) {
+        return this.bookingOrmRepository.find({
+            where: { userId },
+            order: { createdAt: 'DESC' },
+        });
+    }
+
+    async findGuestBookings() {
+        return this.bookingOrmRepository.find({
+            where: { userId: IsNull() },
+            order: { createdAt: 'DESC' },
         });
     }
 

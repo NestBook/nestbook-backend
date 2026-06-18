@@ -100,7 +100,7 @@ export class BookingService {
     };
   }
 
-  async create(dto: CreateBookingDto): Promise<BookingResponse> {
+  async create(dto: CreateBookingDto, userId: string | null): Promise<BookingResponse> {
     this.validateQuantity(dto.quantity);
 
     const nights = this.calculateNights(dto.checkInDate, dto.checkOutDate);
@@ -138,7 +138,7 @@ export class BookingService {
     const booking = await this.bookingRepository.createBooking({
       bookingCode,
 
-      userId: null,
+      userId,
 
       hotelId: String(roomType.hotelId),
       roomTypeId: String(roomType.id),
@@ -175,6 +175,32 @@ export class BookingService {
     return this.mapToResponse(
       booking,
       await this.getBookingDisplayNames(booking),
+    );
+  }
+
+  async findById(id: string): Promise<BookingResponse> {
+    const booking = await this.bookingRepository.findBookingById(id);
+
+    if (!booking) {
+      throw new NotFoundError('Booking not found');
+    }
+
+    return this.mapToResponse(booking);
+  }
+
+  async findUserBookings(userId: string) {
+    const bookings = await this.bookingRepository.findUserBookings(userId);
+
+    return Promise.all(
+      bookings.map((b) => this.mapToResponse(b)),
+    );
+  }
+
+  async findGuestBookings() {
+    const bookings = await this.bookingRepository.findGuestBookings();
+
+    return Promise.all(
+      bookings.map((b) => this.mapToResponse(b)),
     );
   }
 
