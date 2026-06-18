@@ -3,7 +3,9 @@ import { AppService } from './app.service';
 import { LoggerService } from './infrastructures/logger/logger.service';
 import { SuccessResponse } from './commons/core/response/success/success.response';
 import { OkResponse } from './commons/core/response/success/ok.response';
+import { Public } from './commons/decorators/public.decorator';
 
+@Public()
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService, private readonly loggerService: LoggerService) { }

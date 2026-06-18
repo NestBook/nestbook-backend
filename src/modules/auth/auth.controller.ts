@@ -55,6 +55,7 @@ export class AuthController {
   @Post('google-login')
   @HttpCode(HttpStatus.OK)
   async googleLogin(@Body() dto: ProviderLoginDto) {
+    console.log({ dto })
     return new OkResponse(await this.authService.providerLogin(dto));
   }
 

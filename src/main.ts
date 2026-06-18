@@ -14,6 +14,8 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api/v1');
 
+  console.log('CORS config:', configService.get('app.cors'));
+
   app.enableCors(configService.get('app.cors'));
 
   app.useGlobalPipes(
