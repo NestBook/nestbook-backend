@@ -35,6 +35,14 @@ export class BookingRepository implements IBookingRepository {
         });
     }
 
+    async findByOwnerId(ownerId: string): Promise<BookingEntity[]> {
+        return this.bookingOrmRepository
+            .createQueryBuilder('booking')
+            .leftJoin('hotels', 'hotel', 'hotel.id = booking.hotelId')
+            .where('hotel.ownerId = :ownerId', { ownerId })
+            .getMany();
+    }
+
     async createBooking(payload: CreateBookingPayload): Promise<BookingEntity> {
         const booking = this.bookingOrmRepository.create({
             bookingCode: payload.bookingCode,
