@@ -1,0 +1,218 @@
+### NestBook — Booking & Payment API Tests
+### Base URL
+@baseUrl = http://localhost:8080/api/v1
+
+### Room type from seeded data
+@roomTypeId = 9e15c55f-141c-4da3-b7ec-c2a5659129e5
+
+### Set this after creating a booking (copy bookingCode from response)
+@bookingCode = NB20260617657811
+
+
+# ─────────────────────────────────────────────────────────────
+# 1. QUOTE — check price before booking
+# ─────────────────────────────────────────────────────────────
+
+### 1.1 Quote — valid request (2 nights, 1 room)
+POST {{baseUrl}}/bookings/quote
+Content-Type: application/json
+
+{
+  "roomTypeId": "{{roomTypeId}}",
+  "checkInDate": "2026-09-10",
+  "checkOutDate": "2026-09-12",
+  "quantity": 1
+}
+
+###
+
+### 1.2 Quote — multiple rooms (3 nights, 2 rooms)
+POST {{baseUrl}}/bookings/quote
+Content-Type: application/json
+
+{
+  "roomTypeId": "{{roomTypeId}}",
+  "checkInDate": "2026-09-15",
+  "checkOutDate": "2026-09-18",
+  "quantity": 2
+}
+
+###
+
+### 1.3 Quote — invalid date range (checkout before checkin) → 400
+POST {{baseUrl}}/bookings/quote
+Content-Type: application/json
+
+{
+  "roomTypeId": "{{roomTypeId}}",
+  "checkInDate": "2026-09-12",
+  "checkOutDate": "2026-09-10",
+  "quantity": 1
+}
+
+###
+
+### 1.4 Quote — invalid roomTypeId → 404
+POST {{baseUrl}}/bookings/quote
+Content-Type: application/json
+
+{
+  "roomTypeId": "00000000-0000-0000-0000-000000000000",
+  "checkInDate": "2026-09-10",
+  "checkOutDate": "2026-09-12",
+  "quantity": 1
+}
+
+###
+
+
+# ─────────────────────────────────────────────────────────────
+# 2. CREATE BOOKING
+# ─────────────────────────────────────────────────────────────
+
+### 2.1 Create booking — valid (copy bookingCode from response → set @bookingCode above)
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+
+{
+  "roomTypeId": "{{roomTypeId}}",
+  "checkInDate": "2026-09-10",
+  "checkOutDate": "2026-09-12",
+  "quantity": 1,
+  "customerName": "Nguyen Van A",
+  "customerEmail": "nguyenvana@example.com",
+  "customerPhone": "0901234567"
+}
+
+###
+
+### 2.2 Create booking — missing required field (customerPhone) → 400
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+
+{
+  "roomTypeId": "{{roomTypeId}}",
+  "checkInDate": "2026-09-10",
+  "checkOutDate": "2026-09-12",
+  "quantity": 1,
+  "customerName": "Nguyen Van A",
+  "customerEmail": "nguyenvana@example.com"
+}
+
+###
+
+### 2.3 Create booking — invalid email → 400
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+
+{
+  "roomTypeId": "{{roomTypeId}}",
+  "checkInDate": "2026-09-10",
+  "checkOutDate": "2026-09-12",
+  "quantity": 1,
+  "customerName": "Nguyen Van A",
+  "customerEmail": "not-an-email",
+  "customerPhone": "0901234567"
+}
+
+###
+
+### 2.4 Create booking — quantity 0 → 400
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+
+{
+  "roomTypeId": "{{roomTypeId}}",
+  "checkInDate": "2026-09-10",
+  "checkOutDate": "2026-09-12",
+  "quantity": 0,
+  "customerName": "Nguyen Van A",
+  "customerEmail": "nguyenvana@example.com",
+  "customerPhone": "0901234567"
+}
+
+###
+
+
+# ─────────────────────────────────────────────────────────────
+# 3. GET BOOKING
+# ─────────────────────────────────────────────────────────────
+
+### 3.1 Get booking by code — valid
+GET {{baseUrl}}/bookings/{{bookingCode}}
+
+###
+
+### 3.2 Get booking by code — not found → 404
+GET {{baseUrl}}/bookings/NBNOTEXIST000000
+
+###
+
+
+# ─────────────────────────────────────────────────────────────
+# 4. CONFIRM PAYMENT  (creates invoice automatically)
+# ─────────────────────────────────────────────────────────────
+
+### 4.1 Confirm payment — valid (booking must be PENDING_PAYMENT)
+PATCH {{baseUrl}}/bookings/{{bookingCode}}/pay
+
+###
+
+### 4.2 Confirm payment again — already paid → 400
+PATCH {{baseUrl}}/bookings/{{bookingCode}}/pay
+
+###
+
+### 4.3 Confirm payment — booking not found → 404
+PATCH {{baseUrl}}/bookings/NBNOTEXIST000000/pay
+
+###
+
+
+# ─────────────────────────────────────────────────────────────
+# 5. CANCEL BOOKING
+# ─────────────────────────────────────────────────────────────
+
+### 5.1 Create a fresh booking to cancel
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+
+{
+  "roomTypeId": "{{roomTypeId}}",
+  "checkInDate": "2026-10-01",
+  "checkOutDate": "2026-10-03",
+  "quantity": 1,
+  "customerName": "Tran Thi B",
+  "customerEmail": "tranthib@example.com",
+  "customerPhone": "0987654321"
+}
+
+###
+
+### 5.2 Cancel booking — valid (update @bookingCode to the new one first)
+PATCH {{baseUrl}}/bookings/{{bookingCode}}/cancel
+Content-Type: application/json
+
+{
+  "reason": "Change of plans"
+}
+
+###
+
+### 5.3 Cancel booking — no reason (optional field)
+PATCH {{baseUrl}}/bookings/{{bookingCode}}/cancel
+Content-Type: application/json
+
+{}
+
+###
+
+### 5.4 Cancel booking — already cancelled → 400
+PATCH {{baseUrl}}/bookings/{{bookingCode}}/cancel
+Content-Type: application/json
+
+{
+  "reason": "Try to cancel again"
+}
+
+###

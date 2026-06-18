@@ -14,6 +14,16 @@ import logConfig from './config/log.config';
 import { RequestIdMiddleware } from './commons/middleware/request-id.middleware';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './commons/exception/global.exception';
+import { UserModule } from './modules/user/user.module';
+import { PermissionModule } from './modules/permission/permission.module';
+import { RoleModule } from './modules/role/role.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { HotelModule } from './modules/hotel/hotel.module';
+import { RoomTypeModule } from './modules/room-type/room-type.module';
+import { PublicHotelModule } from './modules/room-type/public-hotel.module';
+import { AvailabilityModule } from './modules/availability/availability.module';
+import { BookingModule } from './modules/booking/booking.module';
+import { InvoiceModule } from './modules/invoice/invoice.module';
 
 @Module({
   imports: [
@@ -25,7 +35,17 @@ import { HttpExceptionFilter } from './commons/exception/global.exception';
     DatabaseModule,
     S3Module,
     RedisModule,
-    LoggerModule
+    LoggerModule,
+    UserModule,
+    RoleModule,
+    PermissionModule,
+    AuthModule,
+    HotelModule,
+    RoomTypeModule,
+    PublicHotelModule,
+    AvailabilityModule,
+    BookingModule,
+    InvoiceModule,
   ],
   controllers: [AppController],
   providers: [
@@ -36,7 +56,7 @@ import { HttpExceptionFilter } from './commons/exception/global.exception';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-    .apply(RequestIdMiddleware)
-    .forRoutes('*');
+      .apply(RequestIdMiddleware)
+      .forRoutes('*');
   }
 }
