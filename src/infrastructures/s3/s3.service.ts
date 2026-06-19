@@ -19,7 +19,7 @@ import { LoggerService } from '../logger/logger.service';
 export class S3Service implements OnModuleInit, OnModuleDestroy {
     private client: S3Client;
     private bucket: string;
-    private publicEndpoint: string;
+    private endpoint: string;
     private readonly context = S3Service.name;
 
     constructor(
@@ -31,7 +31,7 @@ export class S3Service implements OnModuleInit, OnModuleDestroy {
     onModuleInit() {
         this.client = this.s3Client;
         this.bucket = this.configService.get<string>('s3.bucket')!;
-        this.publicEndpoint = this.configService.get<string>('s3.publicEndpoint')!;
+        this.endpoint = this.configService.get<string>('s3.endpoint')!;
         this.logger.info('S3 (MinIO) initialized', this.context);
     }
 
@@ -51,7 +51,7 @@ export class S3Service implements OnModuleInit, OnModuleDestroy {
 
         return {
             key,
-            url: this.buildPublicUrl(key),
+            url: `${this.endpoint}/${this.bucket}/${key}`,
         };
     }
 
@@ -75,13 +75,4 @@ export class S3Service implements OnModuleInit, OnModuleDestroy {
         );
     }
 
-    private buildPublicUrl(key: string): string {
-        const endpoint = this.publicEndpoint.replace(/\/+$/, '');
-        const encodedKey = key
-            .split('/')
-            .map((segment) => encodeURIComponent(segment))
-            .join('/');
-
-        return `${endpoint}/${this.bucket}/${encodedKey}`;
-    }
 }
