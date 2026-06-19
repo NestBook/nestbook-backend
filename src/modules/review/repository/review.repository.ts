@@ -12,19 +12,16 @@ export class ReviewRepository {
     private readonly repo: Repository<ReviewEntity>,
   ) { }
 
-  async create(payload: CreateReviewPayload, hotelId: string) {
-    const entity = this.repo.create({
-      ...payload,
-      hotelId,
-    });
-
+  async create(payload: CreateReviewPayload) {
+    const entity = this.repo.create(payload);
     return this.repo.save(entity);
   }
 
-  async findByBookingCode(bookingCode: string) {
+  async findByBookingCode(bookingCode: string, hotelId: string) {
     return this.repo.findOne({
       where: {
         bookingCode,
+        hotelId,
         status: ReviewStatus.VISIBLE,
       },
     });

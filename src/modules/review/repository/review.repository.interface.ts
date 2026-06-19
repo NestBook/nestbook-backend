@@ -3,12 +3,12 @@ import { CreateReviewPayload } from '../payload/create-review.payload';
 
 export interface IReviewRepository {
   create(
-    payload: CreateReviewPayload,
-    hotelId: string,
+    payload: CreateReviewPayload
   ): Promise<ReviewEntity>;
 
   findByBookingCode(
     bookingCode: string,
+    hotelId: string,
   ): Promise<ReviewEntity | null>;
 
   findByHotelId(
