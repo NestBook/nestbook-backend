@@ -17,7 +17,7 @@ import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
-    RoomTypeModule,
+    RoomTypeModule, 
     AvailabilityModule,
     AuthModule,
     InvoiceModule,

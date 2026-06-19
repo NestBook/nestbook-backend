@@ -10,6 +10,7 @@ import { OkResponse } from 'src/commons/core/response/success/ok.response';
 import { CreatedResponse } from 'src/commons/core/response/success/created.response';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
+@Public()
 @Controller('bookings')
 export class BookingController {
   constructor(private readonly bookingService: BookingService) { }
