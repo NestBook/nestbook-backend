@@ -17,7 +17,7 @@ import { LoggerModule } from '../logger/logger.module';
         return new S3Client({
           region: config.get<string>('s3.region')!,
           endpoint: config.get<string>('s3.endpoint')!,
-          forcePathStyle: true,
+          forcePathStyle: config.get<boolean>('s3.forcePathStyle')!,
           credentials: {
             accessKeyId: config.get<string>('s3.accessKey')!,
             secretAccessKey: config.get<string>('s3.secretKey')!,
