@@ -28,7 +28,11 @@ export interface IBookingRepository {
         cancelReason: string | null,
     ): Promise<BookingEntity>;
 
-    findUserBookings(userId: string): Promise<BookingEntity[]>;
+    sumBookedQuantity(
+        roomTypeId: string,
+        checkIn: Date,
+        checkOut: Date,
+    ): Promise<number>;
 
-    findGuestBookings(): Promise<BookingEntity[]>
+    findBookingsByHotelIds(hotelIds: string[]): Promise<BookingEntity[]>;
 }

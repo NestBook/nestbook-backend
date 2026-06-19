@@ -278,6 +278,37 @@ export class BookingService {
     });
   }
 
+  async getOwnerBookings(ownerId: string): Promise<BookingResponse[]> {
+    const hotels = await this.hotelRepository.find({
+      where: { ownerId },
+      select: { id: true },
+    });
+
+    const hotelIds = hotels.map((h) => String(h.id));
+    const bookings = await this.bookingRepository.findBookingsByHotelIds(hotelIds);
+
+    return bookings.map((b) => this.mapToResponse(b));
+  }
+
+  async updateBookingStatusByOwner(
+    bookingId: string,
+    dto: UpdateBookingStatusDto,
+  ): Promise<BookingResponse> {
+    const booking = await this.bookingRepository.findBookingById(bookingId);
+
+    if (!booking) {
+      throw new NotFoundError('Booking not found');
+    }
+
+    const updated = await this.bookingRepository.updateBookingStatus(
+      booking,
+      dto.bookingStatus,
+      booking.paymentStatus,
+    );
+
+    return this.mapToResponse(updated);
+  }
+
   private async getBookingByCodeOrThrow(
     bookingCode: string,
   ): Promise<BookingEntity> {
@@ -300,8 +331,14 @@ export class BookingService {
   }
 
   private calculateNights(checkInDate: string, checkOutDate: string): number {
-    const checkIn = new Date(checkInDate);
-    const checkOut = new Date(checkOutDate);
+    const toUTCDate = (dateStr: string): Date => {
+      const datePart = dateStr.substring(0, 10);
+      const [year, month, day] = datePart.split('-').map(Number);
+      return new Date(Date.UTC(year, month - 1, day));
+    };
+
+    const checkIn = toUTCDate(checkInDate);
+    const checkOut = toUTCDate(checkOutDate);
 
     if (Number.isNaN(checkIn.getTime()) || Number.isNaN(checkOut.getTime())) {
       throw new BadRequestError('Invalid booking date');
@@ -313,7 +350,7 @@ export class BookingService {
 
     const millisecondsPerDay = 1000 * 60 * 60 * 24;
 
-    const nights = Math.ceil(
+    const nights = Math.round(
       (checkOut.getTime() - checkIn.getTime()) / millisecondsPerDay,
     );
 
