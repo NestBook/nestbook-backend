@@ -8,6 +8,11 @@ import {
     BookingStatus,
 } from '../entity/booking.entity';
 
+const ACTIVE_BOOKING_STATUSES = [
+    BookingStatus.CONFIRMED,
+    BookingStatus.PENDING_PAYMENT,
+];
+
 import { CreateBookingPayload } from '../payload/create-booking.payload';
 
 import type { IBookingRepository } from './booking.repository.interface';
@@ -93,5 +98,31 @@ export class BookingRepository implements IBookingRepository {
         booking.cancelReason = cancelReason;
 
         return this.bookingOrmRepository.save(booking);
+    }
+
+    findBookingsByHotelIds(hotelIds: string[]): Promise<BookingEntity[]> {
+        if (hotelIds.length === 0) return Promise.resolve([]);
+
+        return this.bookingOrmRepository.find({
+            where: hotelIds.map((hotelId) => ({ hotelId })),
+            order: { createdAt: 'DESC' },
+        });
+    }
+
+    async sumBookedQuantity(
+        roomTypeId: string,
+        checkIn: Date,
+        checkOut: Date,
+    ): Promise<number> {
+        const result = await this.bookingOrmRepository
+            .createQueryBuilder('booking')
+            .select('COALESCE(SUM(booking.quantity), 0)', 'total')
+            .where('booking.roomTypeId = :roomTypeId', { roomTypeId })
+            .andWhere('booking.bookingStatus IN (:...statuses)', { statuses: ACTIVE_BOOKING_STATUSES })
+            .andWhere('booking.checkInDate < :checkOut', { checkOut })
+            .andWhere('booking.checkOutDate > :checkIn', { checkIn })
+            .getRawOne();
+
+        return Number(result.total);
     }
 }
