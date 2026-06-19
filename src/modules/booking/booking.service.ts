@@ -278,37 +278,6 @@ export class BookingService {
     });
   }
 
-  async getOwnerBookings(ownerId: string): Promise<BookingResponse[]> {
-    const hotels = await this.hotelRepository.find({
-      where: { ownerId },
-      select: { id: true },
-    });
-
-    const hotelIds = hotels.map((h) => String(h.id));
-    const bookings = await this.bookingRepository.findBookingsByHotelIds(hotelIds);
-
-    return bookings.map((b) => this.mapToResponse(b));
-  }
-
-  async updateBookingStatusByOwner(
-    bookingId: string,
-    dto: UpdateBookingStatusDto,
-  ): Promise<BookingResponse> {
-    const booking = await this.bookingRepository.findBookingById(bookingId);
-
-    if (!booking) {
-      throw new NotFoundError('Booking not found');
-    }
-
-    const updated = await this.bookingRepository.updateBookingStatus(
-      booking,
-      dto.bookingStatus,
-      booking.paymentStatus,
-    );
-
-    return this.mapToResponse(updated);
-  }
-
   private async getBookingByCodeOrThrow(
     bookingCode: string,
   ): Promise<BookingEntity> {

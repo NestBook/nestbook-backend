@@ -15,6 +15,10 @@ export interface IBookingRepository {
 
     findByOwnerId(ownerId: string): Promise<BookingEntity[]>;
 
+    findUserBookings(userId: string): Promise<BookingEntity[]>;
+
+    findGuestBookings(): Promise<BookingEntity[]>;
+
     createBooking(payload: CreateBookingPayload): Promise<BookingEntity>;
 
     updateBookingStatus(
