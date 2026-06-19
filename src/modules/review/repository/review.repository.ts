@@ -22,7 +22,6 @@ export class ReviewRepository {
       where: {
         bookingCode,
         hotelId,
-        status: ReviewStatus.VISIBLE,
       },
     });
   }
