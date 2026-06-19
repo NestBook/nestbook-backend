@@ -25,6 +25,7 @@ import { AvailabilityModule } from './modules/availability/availability.module';
 import { BookingModule } from './modules/booking/booking.module';
 import { InvoiceModule } from './modules/invoice/invoice.module';
 import { ReviewModule } from './modules/review/review.module';
+import { SeedModule } from './databases/seed/seed.module';
 
 @Module({
   imports: [
@@ -47,7 +48,8 @@ import { ReviewModule } from './modules/review/review.module';
     AvailabilityModule,
     BookingModule,
     InvoiceModule,
-    ReviewModule
+    ReviewModule,
+    SeedModule,
   ],
   controllers: [AppController],
   providers: [
