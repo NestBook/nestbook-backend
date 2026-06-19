@@ -12,14 +12,10 @@ import { LoggerModule } from 'src/infrastructures/logger/logger.module';
 import { RedisModule } from 'src/infrastructures/redis/redis.module';
 import { HotelEntity } from '../hotel/entities/hotel.entity';
 import { RoomTypeEntity } from '../room-type/entities/room-type.entity';
-import { OwnerBookingController } from '../booking/owner.booking.controller';
-import { AuthModule } from '../auth/auth.module';
-
 @Module({
   imports: [
-    RoomTypeModule, 
+    RoomTypeModule,
     AvailabilityModule,
-    AuthModule,
     InvoiceModule,
     RedisModule,
     LoggerModule,
@@ -32,7 +28,6 @@ import { AuthModule } from '../auth/auth.module';
 
   controllers: [
     BookingController,
-    OwnerBookingController,
   ],
 
   providers: [
@@ -42,7 +37,6 @@ import { AuthModule } from '../auth/auth.module';
 
   exports: [
     BookingService,
-    BOOKING_REPOSITORY,
   ],
 })
 export class BookingModule { }

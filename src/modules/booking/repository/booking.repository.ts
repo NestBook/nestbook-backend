@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import {
     BookingEntity,
@@ -27,34 +27,12 @@ export class BookingRepository implements IBookingRepository {
         });
     }
 
-    async findUserBookings(userId: string) {
-        return this.bookingOrmRepository.find({
-            where: { userId },
-            order: { createdAt: 'DESC' },
-        });
-    }
-
-    async findGuestBookings() {
-        return this.bookingOrmRepository.find({
-            where: { userId: IsNull() },
-            order: { createdAt: 'DESC' },
-        });
-    }
-
     findBookingByCode(bookingCode: string): Promise<BookingEntity | null> {
         return this.bookingOrmRepository.findOne({
             where: {
                 bookingCode,
             },
         });
-    }
-
-    async findByOwnerId(ownerId: string): Promise<BookingEntity[]> {
-        return this.bookingOrmRepository
-            .createQueryBuilder('booking')
-            .leftJoin('hotels', 'hotel', 'hotel.id = booking.hotelId')
-            .where('hotel.ownerId = :ownerId', { ownerId })
-            .getMany();
     }
 
     async createBooking(payload: CreateBookingPayload): Promise<BookingEntity> {
