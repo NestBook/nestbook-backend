@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { BlockAvailabilityStrategy } from './block-availability.strategy';
+import { BookedAvailabilityStrategy } from './booked-availability.strategy';
 import { RedisHoldStrategy } from './redis-hold.strategy';
 
 import { AvailabilityContext } from '../types/availability-context.type';
@@ -11,8 +12,9 @@ import { NotFoundError } from 'src/commons/core/response/error/notfound.error';
 @Injectable()
 export class AvailabilityEngine {
     constructor(
-
         private readonly blockStrategy: BlockAvailabilityStrategy,
+
+        private readonly bookedStrategy: BookedAvailabilityStrategy,
 
         private readonly holdStrategy: RedisHoldStrategy,
 
@@ -20,10 +22,7 @@ export class AvailabilityEngine {
     ) { }
 
     async calculate(ctx: AvailabilityContext): Promise<AvailabilityResult> {
-        const room =
-            await this.roomTypeService.findById(
-                ctx.roomTypeId,
-            );
+        const room = await this.roomTypeService.findById(ctx.roomTypeId);
 
         if (!room) {
             throw new NotFoundError('Room type not found');
@@ -31,11 +30,11 @@ export class AvailabilityEngine {
 
         const total = room.totalQuantity;
 
-        const blocked = await this.blockStrategy.getBlocked(ctx);
-
-        const held = await this.holdStrategy.getHeld(ctx);
-
-        const booked = 0;
+        const [blocked, booked, held] = await Promise.all([
+            this.blockStrategy.getBlocked(ctx),
+            this.bookedStrategy.getBooked(ctx),
+            this.holdStrategy.getHeld(ctx),
+        ]);
 
         const available = Math.max(total - booked - held - blocked, 0);
 

@@ -300,8 +300,14 @@ export class BookingService {
   }
 
   private calculateNights(checkInDate: string, checkOutDate: string): number {
-    const checkIn = new Date(checkInDate);
-    const checkOut = new Date(checkOutDate);
+    const toUTCDate = (dateStr: string): Date => {
+      const datePart = dateStr.substring(0, 10);
+      const [year, month, day] = datePart.split('-').map(Number);
+      return new Date(Date.UTC(year, month - 1, day));
+    };
+
+    const checkIn = toUTCDate(checkInDate);
+    const checkOut = toUTCDate(checkOutDate);
 
     if (Number.isNaN(checkIn.getTime()) || Number.isNaN(checkOut.getTime())) {
       throw new BadRequestError('Invalid booking date');
@@ -313,7 +319,7 @@ export class BookingService {
 
     const millisecondsPerDay = 1000 * 60 * 60 * 24;
 
-    const nights = Math.ceil(
+    const nights = Math.round(
       (checkOut.getTime() - checkIn.getTime()) / millisecondsPerDay,
     );
 
