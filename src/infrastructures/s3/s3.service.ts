@@ -74,5 +74,4 @@ export class S3Service implements OnModuleInit, OnModuleDestroy {
             }),
         );
     }
-
 }

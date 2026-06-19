@@ -13,6 +13,8 @@ export interface IBookingRepository {
 
     findBookingByCode(bookingCode: string): Promise<BookingEntity | null>;
 
+    findByOwnerId(ownerId: string): Promise<BookingEntity[]>;
+
     createBooking(payload: CreateBookingPayload): Promise<BookingEntity>;
 
     updateBookingStatus(
@@ -25,4 +27,8 @@ export interface IBookingRepository {
         booking: BookingEntity,
         cancelReason: string | null,
     ): Promise<BookingEntity>;
+
+    findUserBookings(userId: string): Promise<BookingEntity[]>;
+
+    findGuestBookings(): Promise<BookingEntity[]>
 }
