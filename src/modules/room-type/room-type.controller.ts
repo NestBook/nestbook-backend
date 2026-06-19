@@ -17,47 +17,50 @@ import { CreateRoomTypeDto } from './dto/create-room-type.dto';
 import { UpdateRoomTypeDto } from './dto/update-room-type.dto';
 import { Permissions } from 'src/commons/decorators/permissions.decorator';
 
+import { OkResponse } from 'src/commons/core/response/success/ok.response';
+import { CreatedResponse } from 'src/commons/core/response/success/created.response';
+
 @Controller('owner/room-types')
 export class RoomTypeController {
-  constructor(private readonly service: RoomTypeService) { }
+  constructor(private readonly service: RoomTypeService) {}
 
   @Permissions('room_type.create')
   @Post()
-  create(@Body() dto: CreateRoomTypeDto) {
-    return this.service.create(dto);
+  async create(@Body() dto: CreateRoomTypeDto) {
+    return new CreatedResponse(await this.service.create(dto));
   }
 
   @Permissions('room_type.read')
   @Get()
-  findByHotel(@Query('hotelId') hotelId: string) {
-    return this.service.findByHotelId(hotelId);
+  async findByHotel(@Query('hotelId') hotelId: string) {
+    return new OkResponse(await this.service.findByHotelId(hotelId));
   }
 
   @Permissions('room_type.read')
   @Get(':id')
-  findById(@Param('id') id: string) {
-    return this.service.findById(id);
+  async findById(@Param('id') id: string) {
+    return new OkResponse(await this.service.findById(id));
   }
 
   @Permissions('room_type.update')
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateRoomTypeDto) {
-    return this.service.update(id, dto);
+  async update(@Param('id') id: string, @Body() dto: UpdateRoomTypeDto) {
+    return new OkResponse(await this.service.update(id, dto));
   }
 
   @Permissions('room_type.delete')
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  async remove(@Param('id') id: string) {
+    return new OkResponse(await this.service.remove(id));
   }
 
   @Permissions('room_type.update')
   @Post(':id/images')
   @UseInterceptors(FileInterceptor('file'))
-  uploadImage(
+  async uploadImage(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.service.uploadRoomTypeImage(id, file);
+    return new OkResponse(await this.service.uploadRoomTypeImage(id, file));
   }
 }

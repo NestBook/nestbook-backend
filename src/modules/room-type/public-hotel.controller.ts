@@ -2,25 +2,25 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { PublicHotelService } from './public-hotel.service';
 import { Public } from 'src/commons/decorators/public.decorator';
 
+import { OkResponse } from 'src/commons/core/response/success/ok.response';
+
+@Public()
 @Controller('hotels')
 export class PublicHotelController {
-  constructor(private readonly service: PublicHotelService) { }
+  constructor(private readonly service: PublicHotelService) {}
 
-  @Public()
   @Get(':id/room-types')
-  findRoomTypes(@Param('id') hotelId: string) {
-    return this.service.getRoomTypes(hotelId);
+  async findRoomTypes(@Param('id') hotelId: string) {
+    return new OkResponse(await this.service.getRoomTypes(hotelId));
   }
-
-  @Public()
+  
   @Get()
-  findAll(@Query() query: any) {
-    return this.service.getHotelList(query);
+  async findAll(@Query() query: any) {
+    return new OkResponse(await this.service.getHotelList(query));
   }
 
-  @Public()
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.service.getHotelDetail(id);
+  async findOne(@Param('id') id: string) {
+    return new OkResponse(await this.service.getHotelDetail(id));
   }
 }
