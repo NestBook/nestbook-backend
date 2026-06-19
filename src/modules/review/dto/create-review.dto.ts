@@ -12,4 +12,8 @@ export class CreateReviewDto {
 
   @IsString()
   content!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  hotelId!: string;
 }

@@ -26,11 +26,17 @@ export class ReviewService {
 
     async createReview(payload: CreateReviewPayload) {
         const booking = await this.bookingRepository.findBookingByCode(
-            payload.bookingCode,
+            payload.bookingCode
         );
 
         if (!booking) {
             throw new NotFoundError('Booking not found');
+        }
+
+        if (booking.hotelId !== payload.hotelId) {
+            throw new BadRequestError(
+                'Booking does not belong to this hotel',
+            );
         }
 
         if (booking.paymentStatus !== BookingPaymentStatus.PAID) {
@@ -38,22 +44,20 @@ export class ReviewService {
         }
 
         const existing = await this.reviewRepository.findByBookingCode(
-            payload.bookingCode,
+            payload.bookingCode, payload.hotelId
         );
 
         if (existing) {
             throw new BadRequestError('This booking already has a review');
         }
 
-        return this.reviewRepository.create(
-            {
-                bookingCode: payload.bookingCode,
-                rating: payload.rating,
-                content: payload.content,
-                userId: payload.userId,
-            },
-            booking.hotelId,
-        );
+        return this.reviewRepository.create({
+            bookingCode: payload.bookingCode,
+            hotelId: booking.hotelId,
+            rating: payload.rating,
+            content: payload.content,
+            userId: payload.userId,
+        });
     }
 
     async getHotelReviews(hotelId: string, query: any) {
