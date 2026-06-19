@@ -1,0 +1,16 @@
+# nestbook-backend/.github/workflows/deploy.yml
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - develop
+    tags:
+      - '*'
+
+jobs:
+  pipeline:
+    uses: NestBook/config/.github/workflows/blank.yml@main
+    with:
+      service_name: nestbook-backend
+    secrets: inherit
