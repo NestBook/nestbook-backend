@@ -33,6 +33,14 @@ export class HotelSearchService {
 
         for (const hotel of hotels) {
 
+            if (query.city) {
+                const keyword = query.city.toLowerCase().trim();
+
+                if (!hotel.city.toLowerCase().includes(keyword)) {
+                    continue;
+                }
+            }
+
             const roomTypes = await this.roomTypeService.getByHotelRaw(hotel.id);
 
             const availableRoomTypes: any[] = [];
