@@ -30,6 +30,8 @@ import { HotelEntity } from '../hotel/entities/hotel.entity';
 import { RoomTypeEntity } from '../room-type/entities/room-type.entity';
 import { InvoiceService } from '../invoice/invoice.service';
 import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
+import { MailService } from 'src/infrastructures/mail/mail.service';
+import { InvoiceEntity } from '../invoice/entity/invoice.entity';
 
 const BOOKING_HOLD_TTL_SECONDS = 60 * 2;
 const BOOKING_HOLD_KEY_PREFIX = 'nestbook:booking:hold';
@@ -51,6 +53,8 @@ export class BookingService {
     private readonly dataSource: DataSource,
 
     private readonly invoiceService: InvoiceService,
+
+    private readonly mailService: MailService,
 
     @InjectRepository(HotelEntity)
     private readonly hotelRepository: Repository<HotelEntity>,
@@ -252,7 +256,7 @@ export class BookingService {
   }
 
   async confirmPayment(bookingCode: string): Promise<BookingResponse> {
-    return this.dataSource.transaction(async (manager) => {
+    const { booking, invoice } = await this.dataSource.transaction(async (manager) => {
       const booking = await manager.findOne(BookingEntity, {
         where: { bookingCode },
         lock: { mode: 'pessimistic_write' },
@@ -271,11 +275,19 @@ export class BookingService {
 
       const saved = await manager.save(BookingEntity, booking);
 
-      await this.invoiceService.createForBooking(saved, manager);
+      const invoice = await this.invoiceService.createForBooking(saved, manager);
       await this.removeBookingHold(saved);
 
-      return this.mapToResponse(saved);
+      return { booking: saved, invoice };
     });
+
+    this.sendBookingInvoiceEmail(
+      booking,
+      invoice,
+      await this.getBookingDisplayNames(booking),
+    );
+
+    return this.mapToResponse(booking);
   }
 
   private async getBookingByCodeOrThrow(
@@ -291,6 +303,22 @@ export class BookingService {
     }
 
     return booking;
+  }
+
+  private sendBookingInvoiceEmail(
+    booking: BookingEntity,
+    invoice: InvoiceEntity,
+    displayNames: { hotelName?: string; roomTypeName?: string } = {},
+  ): void {
+    void this.mailService
+      .sendBookingInvoice(booking, invoice, displayNames)
+      .catch((error) => {
+        this.logger.error('Failed to send invoice email', this.context, {
+          bookingCode: booking.bookingCode,
+          invoiceCode: invoice.invoiceCode,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
   }
 
   private validateQuantity(quantity: number): void {

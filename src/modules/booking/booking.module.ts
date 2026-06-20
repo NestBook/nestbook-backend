@@ -14,6 +14,7 @@ import { HotelEntity } from '../hotel/entities/hotel.entity';
 import { RoomTypeEntity } from '../room-type/entities/room-type.entity';
 import { OwnerBookingController } from '../booking/owner.booking.controller';
 import { AuthModule } from '../auth/auth.module';
+import { MailModule } from 'src/infrastructures/mail/mail.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AuthModule } from '../auth/auth.module';
     AvailabilityModule,
     AuthModule,
     InvoiceModule,
+    MailModule,
     RedisModule,
     LoggerModule,
     TypeOrmModule.forFeature([
